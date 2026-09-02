@@ -892,34 +892,30 @@ export function RevenueMatrix({
         
         <div className="space-y-4 sm:space-y-6 relative">
           {/* Header */}
-          <div className="flex gap-2.5 items-center w-full justify-between">
-            <div className="flex gap-2.5 items-center flex-1">
+          <div className="flex w-full flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 flex-1 items-start gap-2.5 sm:items-center">
               {iconBoxed ? (
                 <div className="shrink-0 rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
                   <Target className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
                 </div>
               ) : (
-                <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
+                <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
                   <Target className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                 </div>
               )}
-              <div className="flex-1 flex items-center gap-2">
-                <h3 className="font-['Roboto',sans-serif] font-medium text-[15px] sm:text-[17px] text-[#000b25] dark:text-gray-100 transition-colors duration-300" style={{ fontVariationSettings: "'wdth' 100" }}>
-                  {titleOverride ?? 'Performance Overview'}
-                </h3>
-                {/* Filter Scope Badge */}
-                {!isAllSegments || !isAllVerticals ? (
-                  <span className="hidden px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-[10px] sm:text-[11px] font-semibold text-blue-700 dark:text-blue-400 whitespace-nowrap">
-                    {getFilterLabel()}
-                  </span>
-                ) : null}
-              </div>
+              <h3 className="min-w-0 font-['Roboto',sans-serif] font-medium text-[14px] sm:text-[17px] text-[#000b25] dark:text-gray-100 transition-colors duration-300" style={{ fontVariationSettings: "'wdth' 100" }}>
+                {titleOverride ?? 'Performance Overview'}
+              </h3>
+              {!isAllSegments || !isAllVerticals ? (
+                <span className="hidden px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-[10px] sm:text-[11px] font-semibold text-blue-700 dark:text-blue-400 whitespace-nowrap">
+                  {getFilterLabel()}
+                </span>
+              ) : null}
+              {headerRight && <div className="ml-auto shrink-0 sm:ml-1">{headerRight}</div>}
             </div>
 
-            {headerRight && <div className="shrink-0">{headerRight}</div>}
-
             {/* CR Search Input */}
-            <div ref={searchRef} className="relative flex items-center shrink-0" style={{ width: '167.705px', height: '31.485px' }}>
+            <div ref={searchRef} className="relative flex w-full items-center shrink-0 sm:w-[168px]" style={{ height: '31.485px' }}>
               <div className="absolute inset-0 bg-[#f3f3f5] dark:bg-gray-800/50 rounded-[6.75px] transition-colors duration-300" />
               <div className="absolute left-[10px] top-1/2 -translate-y-1/2 z-10">
                 <svg className="block" width="14" height="14" fill="none" viewBox="0 0 14 14">
