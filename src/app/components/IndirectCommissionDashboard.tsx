@@ -596,6 +596,7 @@ export function IndirectCommissionDashboard({
   const revContrib = D.revenueContribution.map((r) => ({
     ...r,
     pct: revContribTotal ? (r.value / revContribTotal) * 100 : 0,
+    prevValue: P?.revenueContribution.find((x) => x.name === r.name)?.value,
   }));
 
   // Merge the comparison-period series into the chart data when Compare is on.
@@ -607,6 +608,10 @@ export function IndirectCommissionDashboard({
     ...m,
     priorActivations: P?.netActivationsTrend[i]?.activations,
   }));
+  const planCmpData = D.planRows.map((r) => {
+    const pr = P?.planRows.find((x) => x.plan === r.plan);
+    return { ...r, priorAch: pr?.achievement, priorPct: pr?.commissionPct };
+  });
 
   return (
     <div className="space-y-3">
@@ -858,9 +863,14 @@ export function IndirectCommissionDashboard({
                         <span className="w-2.5 h-2.5 rounded-full" style={{ background: r.color }} />
                         <span className="text-gray-700 dark:text-gray-300">{r.name}</span>
                       </span>
-                      <span className="text-right">
-                        <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtOMR(r.value)}</span>
-                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{r.pct.toFixed(1)}%</span>
+                      <span className="flex flex-col items-end">
+                        <span>
+                          <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtOMR(r.value)}</span>
+                          <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{r.pct.toFixed(1)}%</span>
+                        </span>
+                        {typeof r.prevValue === "number" && (
+                          <Delta current={r.value} prev={r.prevValue} fmt={(n) => fmtOMR(Math.abs(n))} />
+                        )}
                       </span>
                     </div>
                   ))}
@@ -912,22 +922,35 @@ export function IndirectCommissionDashboard({
                         </td>
                       </tr>
                     )}
-                    {atRows.map((r, i) => (
+                    {atRows.map((r, i) => {
+                      const pr = P?.activationTypeBreakdown.find(
+                        (x) => x.channel === r.channel && x.segment === r.segment,
+                      );
+                      return (
                       <Row key={`${r.channel}-${r.segment}`} i={i}>
                         <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{r.channel}</td>
                         <td className={td}>
                           <Pill tone={r.segment === "Base" ? "blue" : "purple"}>{r.segment}</Pill>
                         </td>
                         <td className={tdR}>
-                          <div className="flex items-center justify-end gap-2.5">
-                            <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(r.count)}</span>
-                            <MiniBar value={r.count} max={maxCount} />
+                          <div className="flex flex-col items-end gap-0.5">
+                            <div className="flex items-center gap-2.5">
+                              <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(r.count)}</span>
+                              <MiniBar value={r.count} max={maxCount} />
+                            </div>
+                            {pr && <Delta current={r.count} prev={pr.count} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} />}
                           </div>
                         </td>
-                        <td className={`${tdR} font-semibold text-emerald-600 dark:text-emerald-400`}>{fmtOMR(r.revenue)}</td>
+                        <td className={tdR}>
+                          <div className="flex flex-col items-end">
+                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">{fmtOMR(r.revenue)}</span>
+                            {pr && <Delta current={r.revenue} prev={pr.revenue} fmt={(n) => fmtOMR(Math.abs(n))} />}
+                          </div>
+                        </td>
                         <td className={tdR}>{fmtOMR(Math.round(r.revenue / r.count))}</td>
                       </Row>
-                    ))}
+                      );
+                    })}
                   </tbody>
                   {atRows.length > 0 && (
                     <tfoot className="border-t-2 border-gray-200 bg-gray-50/60 dark:border-gray-700/60 dark:bg-white/[0.03]">
@@ -966,6 +989,11 @@ export function IndirectCommissionDashboard({
               </TableTools>
             }
           >
+            {comparisonMode && (
+              <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
+                Point-in-time roster — shows the current period only, no period-over-period change.
+              </p>
+            )}
             <DataTable minWidth={720}>
               <HeadRow>
                 <Th>CR</Th>
@@ -1055,6 +1083,14 @@ export function IndirectCommissionDashboard({
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Total Terminations</p>
                   <p className="text-2xl font-bold text-red-600 dark:text-red-400">{fmtNum(totalTerminations)}</p>
+                  {P && (
+                    <Delta
+                      current={totalTerminations}
+                      prev={P.totalTerminations}
+                      fmt={(n) => fmtNum(Math.abs(Math.round(n)))}
+                      invert
+                    />
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Termination Rate</p>
@@ -1062,6 +1098,15 @@ export function IndirectCommissionDashboard({
                     {((totalTerminations / totalActivations) * 100).toFixed(1)}%
                   </p>
                   <p className="text-[11px] text-gray-400 dark:text-gray-500">of gross activations</p>
+                  {P && (
+                    <Delta
+                      current={(totalTerminations / totalActivations) * 100}
+                      prev={(P.totalTerminations / P.totalActivations) * 100}
+                      fmt={(n) => Math.abs(n).toFixed(1)}
+                      suffix="pp"
+                      invert
+                    />
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Within 2nd-bill window</p>
@@ -1069,6 +1114,14 @@ export function IndirectCommissionDashboard({
                     {fmtNum(D.terminationsByType.reduce((s, t) => s + t.within2ndBill, 0))}
                   </p>
                   <p className="text-[11px] text-gray-400 dark:text-gray-500">commission at risk</p>
+                  {P && (
+                    <Delta
+                      current={D.terminationsByType.reduce((s, t) => s + t.within2ndBill, 0)}
+                      prev={P.terminationsByType.reduce((s, t) => s + t.within2ndBill, 0)}
+                      fmt={(n) => fmtNum(Math.abs(Math.round(n)))}
+                      invert
+                    />
+                  )}
                 </div>
               </div>
 
@@ -1078,14 +1131,16 @@ export function IndirectCommissionDashboard({
                   .sort((a, b) => b.count - a.count)
                   .map((t) => {
                     const share = (t.count / totalTerminations) * 100;
+                    const pt = P?.terminationsByType.find((x) => x.type === t.type);
                     return (
                       <div key={t.type}>
                         <div className="flex items-baseline justify-between text-xs mb-1">
                           <span className="text-gray-700 dark:text-gray-300">{t.type}</span>
-                          <span className="text-gray-500 dark:text-gray-400">
+                          <span className="flex items-baseline gap-1.5 text-gray-500 dark:text-gray-400">
                             <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(t.count)}</span>
                             {" · "}
                             {share.toFixed(0)}%
+                            {pt && <Delta current={t.count} prev={pt.count} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} invert />}
                           </span>
                         </div>
                         <div className="h-2 rounded-full bg-gray-100 dark:bg-white/[0.06] overflow-hidden">
@@ -1295,8 +1350,11 @@ export function IndirectCommissionDashboard({
 
           {/* Achievement vs Payout comparison chart */}
           <SectionCard icon={<TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />} title="Achievement % vs Commission Paid % by Plan">
-            <ResponsiveContainer width="100%" height={isMobile ? 460 : 380}>
-              <BarChart data={D.planRows} layout="vertical" margin={{ left: 4, right: isMobile ? 26 : 36 }} barGap={2}>
+            <ResponsiveContainer
+              width="100%"
+              height={isMobile ? (comparisonMode ? 620 : 460) : comparisonMode ? 520 : 380}
+            >
+              <BarChart data={planCmpData} layout="vertical" margin={{ left: 4, right: isMobile ? 26 : 36 }} barGap={2}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                 <XAxis type="number" tick={{ fontSize: 11 }} domain={[0, 130]} />
                 <YAxis
@@ -1306,14 +1364,24 @@ export function IndirectCommissionDashboard({
                   tick={{ fontSize: isMobile ? 9 : 10 }}
                   tickFormatter={(v: string) => (isMobile && v.length > 16 ? v.slice(0, 15) + "…" : v)}
                 />
-                <RTooltip />
+                <RTooltip formatter={(v: number) => `${v}%`} />
                 <Legend />
                 <Bar dataKey="achievement" name="Achievement %" fill="#6366f1" radius={[0, 4, 4, 0]}>
-                  <LabelList dataKey="achievement" position="right" formatter={(v: number) => `${v}%`} className="fill-gray-700 dark:fill-gray-300 text-[10px]" />
+                  {!comparisonMode && (
+                    <LabelList dataKey="achievement" position="right" formatter={(v: number) => `${v}%`} className="fill-gray-700 dark:fill-gray-300 text-[10px]" />
+                  )}
                 </Bar>
+                {comparisonMode && (
+                  <Bar dataKey="priorAch" name={`Prior Achv % (${comparisonQuarter} ${comparisonYear})`} fill="#c7d2fe" radius={[0, 4, 4, 0]} />
+                )}
                 <Bar dataKey="commissionPct" name="Commission Paid %" fill="#10b981" radius={[0, 4, 4, 0]}>
-                  <LabelList dataKey="commissionPct" position="right" formatter={(v: number) => `${v}%`} className="fill-gray-700 dark:fill-gray-300 text-[10px]" />
+                  {!comparisonMode && (
+                    <LabelList dataKey="commissionPct" position="right" formatter={(v: number) => `${v}%`} className="fill-gray-700 dark:fill-gray-300 text-[10px]" />
+                  )}
                 </Bar>
+                {comparisonMode && (
+                  <Bar dataKey="priorPct" name="Prior Comm %" fill="#a7f3d0" radius={[0, 4, 4, 0]} />
+                )}
               </BarChart>
             </ResponsiveContainer>
           </SectionCard>
@@ -1339,6 +1407,11 @@ export function IndirectCommissionDashboard({
                   </TableTools>
                 }
               >
+                {comparisonMode && (
+                  <p className="mb-4 text-[11px] text-gray-400 dark:text-gray-500">
+                    Live status of the current cycle — not a period-over-period comparison.
+                  </p>
+                )}
                 {/* Summary strip */}
                 <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {[
