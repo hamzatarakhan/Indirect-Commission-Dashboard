@@ -38,6 +38,7 @@ import {
 } from "./ui/select";
 import { RevenueMatrix } from "./RevenueMatrix";
 import { PARTNERS, COMMISSION_PLANS, getIndirectData } from "./indirectData";
+import { useIsMobile } from "./ui/use-mobile";
 
 // Formatting helpers (data itself lives in ./indirectData).
 
@@ -92,16 +93,16 @@ function SectionCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className={`${cardShell} p-6`}
+      className={`${cardShell} p-4 sm:p-6`}
     >
-      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:mb-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-2.5">
           <div className="shrink-0 rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">{icon}</div>
           <h2 className="text-[13px] font-medium text-gray-900 sm:text-[15px] dark:text-gray-100">
             {title}
           </h2>
         </div>
-        {action && <div className="shrink-0">{action}</div>}
+        {action && <div className="w-full shrink-0 lg:w-auto">{action}</div>}
       </div>
       {children}
     </motion.div>
@@ -355,7 +356,11 @@ function SearchInput({
 }
 
 function TableTools({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-wrap items-center gap-2 sm:gap-3">{children}</div>;
+  return (
+    <div className="flex w-full flex-wrap items-center gap-2 sm:gap-3 lg:w-auto lg:justify-end">
+      {children}
+    </div>
+  );
 }
 
 function SegTabs<T extends string>({
@@ -396,6 +401,8 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
   const [granularity, setGranularity] = React.useState<"Month" | "Quarter" | "Year">("Quarter");
   const [partner, setPartner] = React.useState<string>(PARTNERS[0]);
   const [planFilter, setPlanFilter] = React.useState("All Plans");
+
+  const isMobile = useIsMobile();
 
   // Performance Overview view + per-table search
   const [overviewView, setOverviewView] = React.useState<"charts" | "table">("charts");
@@ -461,11 +468,11 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
     <div className="space-y-3">
       {/* Filters */}
       <div className={`${cardShell} p-4`}>
-        <div className="flex flex-wrap items-end gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:items-end sm:gap-4 lg:flex lg:flex-wrap">
           <div className="flex flex-col gap-1">
             <label className="text-xs text-gray-500 dark:text-gray-400">Period</label>
             <Select value={granularity} onValueChange={(v) => setGranularity(v as any)}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-full lg:w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -478,7 +485,7 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
           <div className="flex flex-col gap-1">
             <label className="text-xs text-gray-500 dark:text-gray-400">Partner</label>
             <Select value={partner} onValueChange={setPartner}>
-              <SelectTrigger className="w-[220px]">
+              <SelectTrigger className="w-full lg:w-[220px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -490,10 +497,10 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
             <label className="text-xs text-gray-500 dark:text-gray-400">Commission Plan</label>
             <Select value={planFilter} onValueChange={setPlanFilter}>
-              <SelectTrigger className="w-[280px]">
+              <SelectTrigger className="w-full lg:w-[280px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -506,7 +513,7 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <div className="ml-auto text-xs text-gray-400 dark:text-gray-500 self-center">
+          <div className="text-xs text-gray-400 dark:text-gray-500 sm:col-span-2 sm:self-center sm:text-right lg:ml-auto lg:col-span-1">
             {granularity === "Year"
               ? year
               : granularity === "Quarter"
@@ -1097,11 +1104,17 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
 
           {/* Achievement vs Payout comparison chart */}
           <SectionCard icon={<TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />} title="Achievement % vs Commission Paid % by Plan">
-            <ResponsiveContainer width="100%" height={380}>
-              <BarChart data={D.planRows} layout="vertical" margin={{ left: 40, right: 36 }} barGap={2}>
+            <ResponsiveContainer width="100%" height={isMobile ? 460 : 380}>
+              <BarChart data={D.planRows} layout="vertical" margin={{ left: 4, right: isMobile ? 26 : 36 }} barGap={2}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                 <XAxis type="number" tick={{ fontSize: 11 }} domain={[0, 130]} />
-                <YAxis type="category" dataKey="plan" width={180} tick={{ fontSize: 10 }} />
+                <YAxis
+                  type="category"
+                  dataKey="plan"
+                  width={isMobile ? 92 : 180}
+                  tick={{ fontSize: isMobile ? 9 : 10 }}
+                  tickFormatter={(v: string) => (isMobile && v.length > 16 ? v.slice(0, 15) + "…" : v)}
+                />
                 <RTooltip />
                 <Legend />
                 <Bar dataKey="achievement" name="Achievement %" fill="#6366f1" radius={[0, 4, 4, 0]}>
