@@ -511,8 +511,8 @@ export function DashboardHeader({
 
             {/* Action Buttons - Commission & Dark Mode */}
             <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-              {/* Navigate to Indirect Commission Dashboard */}
-              {onNavigateToIndirectCommission && (
+              {/* Navigate to Indirect Commission Dashboard — hidden for now */}
+              {false && onNavigateToIndirectCommission && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>

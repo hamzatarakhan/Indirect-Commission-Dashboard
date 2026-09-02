@@ -199,7 +199,7 @@ export default function App() {
   const [year, setYear] = useState("2024");
   const [showCaretaker, setShowCaretaker] = useState(false);
   const [selectedVertical, setSelectedVertical] = useState<string | null>(null);
-  const [activeDashboard, setActiveDashboard] = useState<'commission' | 'performance' | 'indirect-commission'>('performance');
+  const [activeDashboard, setActiveDashboard] = useState<'commission' | 'performance' | 'indirect-commission'>('indirect-commission');
 
   // Service Details Page navigation
   interface ServiceDetailsState {
