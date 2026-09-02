@@ -752,7 +752,7 @@ export function IndirectCommissionDashboard({
       )}
 
       <Tabs defaultValue="performance" className="space-y-3">
-        <TabsList className="inline-flex h-auto gap-1 rounded-xl border border-slate-200 bg-slate-100/80 p-1 dark:border-gray-700/60 dark:bg-gray-800/50">
+        <TabsList className="inline-flex h-auto gap-1 rounded-xl border border-slate-200 bg-white p-1 dark:border-gray-700/60 dark:bg-[#07112F]">
           {["performance", "commission"].map((v) => (
             <TabsTrigger
               key={v}
