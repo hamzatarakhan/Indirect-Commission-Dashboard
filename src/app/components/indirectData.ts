@@ -125,6 +125,26 @@ const HUNTING_VALIDATION = [
   { cr: "C-20514", customer: "Al Hassan Engineering", partner: "Gulf Dealers Group", activatedOn: "2026-09-01", secondBill: false },
 ];
 
+// CRs with no activation in the last 24+ months (dormant book).
+const INACTIVE_CRS = [
+  { cr: "C-27412", name: "Muscat Overseas Group", partner: "Al Tijaria Telecom", lastActivation: "2024-03-18", lastRevenue: 96_000 },
+  { cr: "C-27488", name: "Al Jazeera Steel Products", partner: "Gulf Dealers Group", lastActivation: "2024-01-05", lastRevenue: 141_000 },
+  { cr: "C-27501", name: "Oman Oil Marketing", partner: "Muscat Connect LLC", lastActivation: "2023-11-22", lastRevenue: 208_000 },
+  { cr: "C-27533", name: "Galfar Engineering", partner: "Gulf Dealers Group", lastActivation: "2024-05-09", lastRevenue: 77_000 },
+  { cr: "C-27564", name: "Voltamp Energy", partner: "Nizwa Mobile Traders", lastActivation: "2023-09-14", lastRevenue: 54_000 },
+  { cr: "C-27590", name: "Al Anwar Ceramic Tiles", partner: "Al Tijaria Telecom", lastActivation: "2024-02-27", lastRevenue: 63_000 },
+  { cr: "C-27618", name: "Dhofar Beverages", partner: "Salalah Comms Partners", lastActivation: "2023-12-03", lastRevenue: 119_000 },
+  { cr: "C-27645", name: "Oman Cement Co", partner: "Muscat Connect LLC", lastActivation: "2024-04-11", lastRevenue: 175_000 },
+  { cr: "C-27672", name: "Areej Vegetable Oils", partner: "Nizwa Mobile Traders", lastActivation: "2023-10-19", lastRevenue: 48_000 },
+  { cr: "C-27699", name: "Al Maha Petroleum", partner: "Al Tijaria Telecom", lastActivation: "2024-06-01", lastRevenue: 132_000 },
+  { cr: "C-27725", name: "Oman Fisheries Co", partner: "Gulf Dealers Group", lastActivation: "2023-08-27", lastRevenue: 39_000 },
+  { cr: "C-27751", name: "Salalah Mills Co", partner: "Salalah Comms Partners", lastActivation: "2024-03-30", lastRevenue: 88_000 },
+  { cr: "C-27780", name: "National Aluminium Products", partner: "Muscat Connect LLC", lastActivation: "2023-07-15", lastRevenue: 61_000 },
+  { cr: "C-27806", name: "Sea World International", partner: "Nizwa Mobile Traders", lastActivation: "2024-05-22", lastRevenue: 44_000 },
+  { cr: "C-27834", name: "Oman Chlorine", partner: "Al Tijaria Telecom", lastActivation: "2023-11-08", lastRevenue: 72_000 },
+  { cr: "C-27861", name: "Sohar Port & Freezone", partner: "Gulf Dealers Group", lastActivation: "2024-01-26", lastRevenue: 157_000 },
+];
+
 // Per-CR performance (the "Performance by CR" table).
 const CR_PERFORMANCE = [
   { cr: "C-31001", name: "Bahwan Trading Co", partner: "Al Tijaria Telecom", revenueActual: 268_000, revenueTarget: 250_000, hunting: 90, farming: 40, portIn: 55, upgrades: 120 },
@@ -212,6 +232,16 @@ export function getIndirectData(f: IndirectFilters) {
     (h) => !isPartner || h.partner === partnerName,
   );
 
+  const inactiveCRList = INACTIVE_CRS.filter(
+    (c) => !isPartner || c.partner === partnerName,
+  ).map((c) => {
+    const months = Math.max(
+      24,
+      Math.round((Date.parse("2026-09-02") - Date.parse(c.lastActivation)) / 2_629_800_000),
+    );
+    return { ...c, monthsInactive: months, lastRevenue: scaleV(c.lastRevenue) };
+  });
+
   const crPerformance = CR_PERFORMANCE.filter(
     (c) => !isPartner || c.partner === partnerName,
   ).map((c) => {
@@ -284,6 +314,7 @@ export function getIndirectData(f: IndirectFilters) {
     terminationsByType,
     revenueContribution,
     huntingValidation,
+    inactiveCRList,
     crPerformance,
     planRows,
     commissionCycle,

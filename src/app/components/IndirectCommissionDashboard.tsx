@@ -10,6 +10,7 @@ import {
   Repeat,
   Wallet,
   Clock,
+  CalendarOff,
   Building2,
   Calendar,
   Search,
@@ -541,6 +542,7 @@ export function IndirectCommissionDashboard({
   // Performance Overview view + per-table search
   const [overviewView, setOverviewView] = React.useState<"charts" | "table">("charts");
   const [crSearch, setCrSearch] = React.useState("");
+  const [inactiveSearch, setInactiveSearch] = React.useState("");
   const [atSearch, setAtSearch] = React.useState("");
   const [atSeg, setAtSeg] = React.useState<"all" | "Base" | "Other Segment">("all");
   const [hvSearch, setHvSearch] = React.useState("");
@@ -802,7 +804,7 @@ export function IndirectCommissionDashboard({
               label="Inactive CRs (2 yrs)"
               value={fmtNum(inactiveCRs)}
               tone="bad"
-              sub="No activations recorded in last 24 months"
+              sub="No activations in 24 months — list below"
               progress={(inactiveCRs / crBase) * 100}
               progressLabel={`of ${fmtNum(crBase)} CRs`}
               delta={P ? { current: inactiveCRs, prev: P.inactiveCRs, fmt: (n) => fmtNum(Math.abs(Math.round(n))), invert: true } : undefined}
@@ -961,6 +963,77 @@ export function IndirectCommissionDashboard({
                   );
                 })()}
               </motion.div>
+            );
+          })()}
+
+          {/* Inactive CRs — no activation in 24+ months */}
+          {(() => {
+            const q = inactiveSearch.trim().toLowerCase();
+            const rows = D.inactiveCRList.filter(
+              (c) => !q || c.name.toLowerCase().includes(q) || c.cr.toLowerCase().includes(q) || c.partner.toLowerCase().includes(q),
+            );
+            return (
+              <SectionCard
+                icon={<CalendarOff className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+                title="Inactive CRs — no activation in the last 24 months"
+                action={
+                  <TableTools>
+                    <SearchInput value={inactiveSearch} onChange={setInactiveSearch} placeholder="Search company / CR / partner" />
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      {rows.length} of {D.inactiveCRs} dormant CRs
+                    </span>
+                  </TableTools>
+                }
+              >
+                <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
+                  Sample of the {fmtNum(D.inactiveCRs)} CRs with no recorded activation in 24+ months — the accounts to target for re-engagement.
+                </p>
+                <DataTable minWidth={720}>
+                  <HeadRow>
+                    <Th>CR</Th>
+                    <Th>Company</Th>
+                    <Th>Partner</Th>
+                    <Th>Last activation</Th>
+                    <Th align="right">Dormant</Th>
+                    <Th align="right">Last revenue</Th>
+                  </HeadRow>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
+                    {rows.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
+                          No dormant CRs match “{inactiveSearch}”.
+                        </td>
+                      </tr>
+                    )}
+                    {rows.map((c, i) => (
+                      <Row key={c.cr} i={i}>
+                        <td className={td}>
+                          <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600 dark:bg-white/[0.06] dark:text-gray-400">
+                            {c.cr}
+                          </span>
+                        </td>
+                        <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>
+                          <span className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
+                            {c.name}
+                          </span>
+                        </td>
+                        <td className={`${td} text-gray-500 dark:text-gray-400`}>{c.partner}</td>
+                        <td className={td}>
+                          <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {fmtDate(c.lastActivation)}
+                          </span>
+                        </td>
+                        <td className={tdR}>
+                          <Pill tone={c.monthsInactive >= 30 ? "red" : "amber"}>{c.monthsInactive} mo</Pill>
+                        </td>
+                        <td className={`${tdR} text-gray-600 dark:text-gray-300`}>{fmtOMR(c.lastRevenue)}</td>
+                      </Row>
+                    ))}
+                  </tbody>
+                </DataTable>
+              </SectionCard>
             );
           })()}
 
