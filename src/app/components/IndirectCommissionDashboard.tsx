@@ -532,14 +532,61 @@ function SegTabs<T extends string>({
 
 type IndirectData = ReturnType<typeof getIndirectData>;
 
-function DRow({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
+// KPI box for the dialog summary strip.
+function StatBox({
+  label,
+  value,
+  sub,
+  tone = "neutral",
+}: {
+  label: string;
+  value: React.ReactNode;
+  sub?: React.ReactNode;
+  tone?: "neutral" | "good" | "bad" | "warn";
+}) {
+  const cls =
+    tone === "good"
+      ? "text-emerald-600 dark:text-emerald-400"
+      : tone === "bad"
+        ? "text-red-600 dark:text-red-400"
+        : tone === "warn"
+          ? "text-amber-600 dark:text-amber-400"
+          : "text-gray-900 dark:text-gray-100";
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-gray-100 py-1.5 text-sm last:border-0 dark:border-gray-800/60">
-      <span className="text-gray-500 dark:text-gray-400">{label}</span>
-      <span className="font-medium text-gray-900 dark:text-gray-100">{children}</span>
+    <div className="rounded-lg border border-gray-200/70 bg-gray-50/70 p-2.5 dark:border-gray-700/60 dark:bg-white/[0.03]">
+      <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">{label}</p>
+      <p className={`mt-0.5 text-base font-bold ${cls}`}>{value}</p>
+      {sub && <p className="text-[10px] text-gray-400 dark:text-gray-500">{sub}</p>}
     </div>
   );
 }
+
+// Section label inside a dialog.
+function DlgLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      {children}
+    </p>
+  );
+}
+
+// Styled table for dialogs.
+function DlgTable({ head, children }: { head: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700/60">
+      <table className="w-full text-sm">
+        <thead className="bg-gray-50 text-[10px] uppercase tracking-wide text-gray-400 dark:bg-white/[0.03] dark:text-gray-500">
+          {head}
+        </thead>
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">{children}</tbody>
+      </table>
+    </div>
+  );
+}
+const dlgTh = "px-3 py-2 text-left font-semibold";
+const dlgThR = "px-3 py-2 text-right font-semibold";
+const dlgTd = "px-3 py-2 text-gray-700 dark:text-gray-300";
+const dlgTdR = "px-3 py-2 text-right tabular-nums text-gray-700 dark:text-gray-300";
 
 function StatDetailDialog({
   open,
@@ -564,159 +611,202 @@ function StatDetailDialog({
 }) {
   const priorCol = `${comparisonQuarter} ${comparisonYear}`;
   const revTotal = D.revenueContribution.reduce((s, r) => s + r.value, 0);
+  const actMax = Math.max(1, ...D.revenueContribution.map((r) => r.value));
+
+  const totTarget = D.activationByType.reduce((s, a) => s + a.target, 0);
+  const totActual = D.activationByType.reduce((s, a) => s + a.actual, 0);
+  const termRate = D.totalActivations ? (D.totalTerminations / D.totalActivations) * 100 : 0;
+
+  const [q, setQ] = React.useState("");
+  React.useEffect(() => setQ(""), [open]);
+  const inactiveRows = D.inactiveCRList.filter((c) => {
+    const s = q.trim().toLowerCase();
+    return !s || c.name.toLowerCase().includes(s) || c.partner.toLowerCase().includes(s) || c.cr.toLowerCase().includes(s);
+  });
 
   const titles: Record<string, string> = {
     revenue: "Revenue — Actual vs Target",
     activations: "Activations by Type",
-    net: "Net Activations — Activations vs Terminations",
-    inactive: "Inactive CRs — no activation in 24+ months",
+    net: "Net Activations",
+    inactive: "Inactive CRs (24+ months)",
   };
 
   return (
     <Dialog open={open !== null} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
+      <DialogContent className="max-h-[85vh] gap-0 overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{open ? titles[open] : ""}</DialogTitle>
-          {P && <DialogDescription>Comparison: {cmpLabel}</DialogDescription>}
+          <DialogDescription>
+            {P ? `${cmpLabel} — figures for the current period` : "Current period breakdown"}
+          </DialogDescription>
         </DialogHeader>
 
         {open === "revenue" && (
           <div>
-            <DRow label="Actual">{fmtOMR(D.revenueActual)}</DRow>
-            <DRow label="Target">{fmtOMR(D.revenueTarget)}</DRow>
-            <DRow label="Achievement">{D.revenueAchievement}%</DRow>
-            {P && (
-              <>
-                <DRow label={`Actual (${priorCol})`}>{fmtOMR(P.revenueActual)}</DRow>
-                <DRow label={`Achievement (${priorCol})`}>{P.revenueAchievement}%</DRow>
-              </>
-            )}
-            <p className="mb-1.5 mt-4 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
-              Revenue by activation type
-            </p>
-            {D.revenueContribution.map((r) => (
-              <DRow
-                key={r.name}
-                label={
-                  <span className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: r.color }} />
-                    {r.name}
-                  </span>
-                }
-              >
-                {fmtOMR(r.value)}{" "}
-                <span className="ml-1 text-xs text-gray-400">
-                  {revTotal ? ((r.value / revTotal) * 100).toFixed(1) : 0}%
-                </span>
-              </DRow>
-            ))}
+            <div className="grid grid-cols-3 gap-2">
+              <StatBox label="Actual" value={fmtOMR(D.revenueActual)} tone={D.revenueAchievement >= 100 ? "good" : "warn"} />
+              <StatBox label="Target" value={fmtOMR(D.revenueTarget)} />
+              <StatBox
+                label="Achievement"
+                value={`${D.revenueAchievement}%`}
+                sub={P ? `${priorCol}: ${P.revenueAchievement}%` : undefined}
+                tone={D.revenueAchievement >= 100 ? "good" : "warn"}
+              />
+            </div>
+            <DlgLabel>Revenue by activation type</DlgLabel>
+            <DlgTable
+              head={
+                <tr>
+                  <th className={dlgTh}>Channel</th>
+                  <th className={dlgThR}>Revenue</th>
+                  <th className={dlgThR}>Share</th>
+                </tr>
+              }
+            >
+              {D.revenueContribution.map((r) => (
+                <tr key={r.name}>
+                  <td className={dlgTd}>
+                    <span className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: r.color }} />
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{r.name}</span>
+                    </span>
+                  </td>
+                  <td className={`${dlgTdR} font-semibold text-gray-900 dark:text-gray-100`}>{fmtOMR(r.value)}</td>
+                  <td className={dlgTdR}>
+                    <span className="inline-flex items-center gap-2">
+                      <span className="hidden h-1.5 w-14 overflow-hidden rounded-full bg-gray-100 sm:block dark:bg-white/[0.08]">
+                        <span className="block h-full rounded-full" style={{ width: `${(r.value / actMax) * 100}%`, background: r.color }} />
+                      </span>
+                      {revTotal ? ((r.value / revTotal) * 100).toFixed(1) : 0}%
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </DlgTable>
           </div>
         )}
 
         {open === "activations" && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                  <th className="py-1.5 pr-2 text-left font-medium">Type</th>
-                  <th className="px-2 py-1.5 text-right font-medium">Target</th>
-                  <th className="px-2 py-1.5 text-right font-medium">Actual</th>
-                  <th className="px-2 py-1.5 text-right font-medium">Achv.</th>
-                  {P && <th className="pl-2 py-1.5 text-right font-medium">{priorCol}</th>}
+          <div>
+            <div className="grid grid-cols-3 gap-2">
+              <StatBox label="Actual" value={fmtNum(totActual)} tone={totActual >= totTarget ? "good" : "bad"} />
+              <StatBox label="Target" value={fmtNum(totTarget)} />
+              <StatBox
+                label="Achievement"
+                value={`${totTarget ? Math.round((totActual / totTarget) * 100) : 0}%`}
+                tone={totActual >= totTarget ? "good" : "bad"}
+              />
+            </div>
+            <DlgLabel>By activation type</DlgLabel>
+            <DlgTable
+              head={
+                <tr>
+                  <th className={dlgTh}>Type</th>
+                  <th className={dlgThR}>Target</th>
+                  <th className={dlgThR}>Actual</th>
+                  <th className={dlgThR}>Achv.</th>
+                  {P && <th className={dlgThR}>{priorCol}</th>}
                 </tr>
-              </thead>
-              <tbody>
-                {D.activationByType.map((a, i) => {
-                  const prior = P?.activationByType[i]?.actual;
-                  return (
-                    <tr key={a.type} className="border-t border-gray-100 dark:border-gray-800/60">
-                      <td className="py-1.5 pr-2 font-medium text-gray-900 dark:text-gray-100">{a.type}</td>
-                      <td className="px-2 py-1.5 text-right text-gray-500 dark:text-gray-400">{fmtNum(a.target)}</td>
-                      <td className="px-2 py-1.5 text-right font-semibold text-gray-900 dark:text-gray-100">{fmtNum(a.actual)}</td>
-                      <td className="px-2 py-1.5 text-right">{a.target ? Math.round((a.actual / a.target) * 100) : 0}%</td>
-                      {P && <td className="pl-2 py-1.5 text-right text-gray-500 dark:text-gray-400">{prior != null ? fmtNum(prior) : "—"}</td>}
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-gray-200 font-semibold dark:border-gray-700">
-                  <td className="py-1.5 pr-2">Total</td>
-                  <td className="px-2 py-1.5 text-right">{fmtNum(D.activationByType.reduce((s, a) => s + a.target, 0))}</td>
-                  <td className="px-2 py-1.5 text-right">{fmtNum(D.activationByType.reduce((s, a) => s + a.actual, 0))}</td>
-                  <td className="px-2 py-1.5 text-right" />
-                  {P && <td className="pl-2 py-1.5 text-right">{fmtNum(P.activationByType.reduce((s, a) => s + a.actual, 0))}</td>}
-                </tr>
-              </tfoot>
-            </table>
+              }
+            >
+              {D.activationByType.map((a, i) => {
+                const prior = P?.activationByType[i]?.actual;
+                const achv = a.target ? Math.round((a.actual / a.target) * 100) : 0;
+                return (
+                  <tr key={a.type}>
+                    <td className={`${dlgTd} font-medium text-gray-900 dark:text-gray-100`}>{a.type}</td>
+                    <td className={dlgTdR}>{fmtNum(a.target)}</td>
+                    <td className={`${dlgTdR} font-semibold text-gray-900 dark:text-gray-100`}>{fmtNum(a.actual)}</td>
+                    <td className={dlgTdR}>
+                      <Pill tone={achv >= 100 ? "green" : achv >= 90 ? "amber" : "red"}>{achv}%</Pill>
+                    </td>
+                    {P && <td className={dlgTdR}>{prior != null ? fmtNum(prior) : "—"}</td>}
+                  </tr>
+                );
+              })}
+              <tr className="bg-gray-50/60 font-semibold text-gray-900 dark:bg-white/[0.03] dark:text-gray-100">
+                <td className={dlgTd}>Total</td>
+                <td className={dlgTdR}>{fmtNum(totTarget)}</td>
+                <td className={dlgTdR}>{fmtNum(totActual)}</td>
+                <td className={dlgTdR} />
+                {P && <td className={dlgTdR}>{fmtNum(P.activationByType.reduce((s, a) => s + a.actual, 0))}</td>}
+              </tr>
+            </DlgTable>
           </div>
         )}
 
         {open === "net" && (
           <div>
-            <DRow label="Gross activations">{fmtNum(D.totalActivations)}</DRow>
-            <DRow label="Terminations">{fmtNum(D.totalTerminations)}</DRow>
-            <DRow label="Net activations">{fmtNum(D.netActivations)}</DRow>
-            <DRow label="Termination rate">
-              {((D.totalTerminations / D.totalActivations) * 100).toFixed(1)}%
-            </DRow>
-            <p className="mb-1.5 mt-4 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
-              Monthly trend
-            </p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                    <th className="py-1.5 pr-2 text-left font-medium">Period</th>
-                    <th className="px-2 py-1.5 text-right font-medium">Activations</th>
-                    <th className="px-2 py-1.5 text-right font-medium">Terminations</th>
-                    <th className="pl-2 py-1.5 text-right font-medium">Net</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {D.netActivationsTrend.map((m) => (
-                    <tr key={m.period} className="border-t border-gray-100 dark:border-gray-800/60">
-                      <td className="py-1.5 pr-2 font-medium text-gray-900 dark:text-gray-100">{m.period}</td>
-                      <td className="px-2 py-1.5 text-right text-emerald-600 dark:text-emerald-400">{fmtNum(m.activations)}</td>
-                      <td className="px-2 py-1.5 text-right text-red-600 dark:text-red-400">{fmtNum(m.terminations)}</td>
-                      <td className="pl-2 py-1.5 text-right font-semibold">{fmtNum(m.activations - m.terminations)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid grid-cols-3 gap-2">
+              <StatBox label="Activations" value={fmtNum(D.totalActivations)} tone="good" />
+              <StatBox label="Terminations" value={fmtNum(D.totalTerminations)} tone="bad" />
+              <StatBox label="Net" value={fmtNum(D.netActivations)} sub={`${termRate.toFixed(1)}% churn`} tone="good" />
             </div>
+            <DlgLabel>Monthly trend</DlgLabel>
+            <DlgTable
+              head={
+                <tr>
+                  <th className={dlgTh}>Period</th>
+                  <th className={dlgThR}>Activations</th>
+                  <th className={dlgThR}>Terminations</th>
+                  <th className={dlgThR}>Net</th>
+                </tr>
+              }
+            >
+              {D.netActivationsTrend.map((m) => (
+                <tr key={m.period}>
+                  <td className={`${dlgTd} font-medium text-gray-900 dark:text-gray-100`}>{m.period}</td>
+                  <td className={`${dlgTdR} text-emerald-600 dark:text-emerald-400`}>{fmtNum(m.activations)}</td>
+                  <td className={`${dlgTdR} text-red-600 dark:text-red-400`}>{fmtNum(m.terminations)}</td>
+                  <td className={`${dlgTdR} font-semibold text-gray-900 dark:text-gray-100`}>{fmtNum(m.activations - m.terminations)}</td>
+                </tr>
+              ))}
+            </DlgTable>
           </div>
         )}
 
         {open === "inactive" && (
           <div>
-            <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">
-              <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(D.inactiveCRs)}</span> CRs with
-              no recorded activation in 24+ months. Sample of {D.inactiveCRList.length} below — full list on the
-              Performance tab.
-            </p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                    <th className="py-1.5 pr-2 text-left font-medium">Company</th>
-                    <th className="px-2 py-1.5 text-left font-medium">Partner</th>
-                    <th className="px-2 py-1.5 text-left font-medium">Last activation</th>
-                    <th className="pl-2 py-1.5 text-right font-medium">Dormant</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {D.inactiveCRList.map((c) => (
-                    <tr key={c.cr} className="border-t border-gray-100 dark:border-gray-800/60">
-                      <td className="py-1.5 pr-2 font-medium text-gray-900 dark:text-gray-100">{c.name}</td>
-                      <td className="px-2 py-1.5 text-gray-500 dark:text-gray-400">{c.partner}</td>
-                      <td className="px-2 py-1.5 text-gray-500 dark:text-gray-400">{fmtDate(c.lastActivation)}</td>
-                      <td className="pl-2 py-1.5 text-right font-medium text-red-600 dark:text-red-400">{c.monthsInactive} mo</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid grid-cols-3 gap-2">
+              <StatBox label="Dormant CRs" value={fmtNum(D.inactiveCRs)} tone="bad" />
+              <StatBox label="Showing" value={`${inactiveRows.length} / ${D.inactiveCRList.length}`} sub="sample" />
+              <StatBox
+                label="Avg dormant"
+                value={`${Math.round(D.inactiveCRList.reduce((s, c) => s + c.monthsInactive, 0) / Math.max(1, D.inactiveCRList.length))} mo`}
+                tone="warn"
+              />
             </div>
+            <div className="mb-2 mt-4">
+              <SearchInput value={q} onChange={setQ} placeholder="Search company / partner / CR" width="w-full" />
+            </div>
+            <DlgTable
+              head={
+                <tr>
+                  <th className={dlgTh}>Company</th>
+                  <th className={dlgTh}>Partner</th>
+                  <th className={dlgTh}>Last activation</th>
+                  <th className={dlgThR}>Dormant</th>
+                </tr>
+              }
+            >
+              {inactiveRows.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-3 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+                    No companies match “{q}”.
+                  </td>
+                </tr>
+              )}
+              {inactiveRows.map((c) => (
+                <tr key={c.cr}>
+                  <td className={`${dlgTd} font-medium text-gray-900 dark:text-gray-100`}>{c.name}</td>
+                  <td className={dlgTd}>{c.partner}</td>
+                  <td className={dlgTd}>{fmtDate(c.lastActivation)}</td>
+                  <td className={dlgTdR}>
+                    <Pill tone={c.monthsInactive >= 30 ? "red" : "amber"}>{c.monthsInactive} mo</Pill>
+                  </td>
+                </tr>
+              ))}
+            </DlgTable>
           </div>
         )}
       </DialogContent>
@@ -1196,8 +1286,8 @@ export function IndirectCommissionDashboard({
             );
           })()}
 
-          {/* Inactive CRs — no activation in 24+ months */}
-          {(() => {
+          {/* Inactive CRs — no activation in 24+ months. Hidden — surfaced via the tile's detail dialog. */}
+          {false && (() => {
             const q = inactiveSearch.trim().toLowerCase();
             const rows = D.inactiveCRList.filter(
               (c) => !q || c.name.toLowerCase().includes(q) || c.cr.toLowerCase().includes(q) || c.partner.toLowerCase().includes(q),
