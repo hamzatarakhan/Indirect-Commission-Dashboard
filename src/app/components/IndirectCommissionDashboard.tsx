@@ -719,12 +719,20 @@ export function IndirectCommissionDashboard({
                 className={`${cardShell} p-6`}
               >
                 <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="text-[13px] font-medium text-gray-900 dark:text-gray-100 sm:text-[15px]">
-                    Performance Overview
-                  </h2>
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <div className="shrink-0 rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
+                      <Target className="h-4 w-4 text-blue-600 dark:text-blue-400 sm:h-5 sm:w-5" />
+                    </div>
+                    <h2
+                      className="min-w-0 font-['Roboto',sans-serif] text-[14px] font-medium text-[#000b25] dark:text-gray-100 sm:text-[17px]"
+                      style={{ fontVariationSettings: "'wdth' 100" }}
+                    >
+                      Performance Overview
+                    </h2>
+                  </div>
                   <TableTools>
                     {viewToggle}
-                    <SearchInput value={crSearch} onChange={setCrSearch} placeholder="Search CR or customer" />
+                    <SearchInput value={crSearch} onChange={setCrSearch} placeholder="Search by name or CR number" />
                     <span className="text-xs text-gray-400 dark:text-gray-500">
                       {crRows.length} of {D.crPerformance.length}
                     </span>
