@@ -1528,6 +1528,9 @@ export default function App() {
               period={period}
               quarter={quarter}
               year={year}
+              comparisonMode={comparisonMode}
+              comparisonQuarter={comparisonQuarter}
+              comparisonYear={comparisonYear}
             />
           ) : activeDashboard === 'performance' ? (
             <PerformanceDashboard

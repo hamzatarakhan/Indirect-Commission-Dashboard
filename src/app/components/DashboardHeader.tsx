@@ -125,7 +125,7 @@ export function DashboardHeader({
 
   // Auto-sync granularity when primary changes
   useEffect(() => {
-    if (syncGranularity && comparisonMode && activeDashboard === 'performance') {
+    if (syncGranularity && comparisonMode && (activeDashboard === 'performance' || activeDashboard === 'indirect-commission')) {
       if (period !== comparisonPeriod) {
         // Sync granularity
         setComparisonPeriod(period);
@@ -154,7 +154,7 @@ export function DashboardHeader({
 
   // Check for granularity mismatch when sync is OFF
   useEffect(() => {
-    if (!syncGranularity && comparisonMode && activeDashboard === 'performance') {
+    if (!syncGranularity && comparisonMode && (activeDashboard === 'performance' || activeDashboard === 'indirect-commission')) {
       setGranularityMismatch(period !== comparisonPeriod);
     } else {
       setGranularityMismatch(false);

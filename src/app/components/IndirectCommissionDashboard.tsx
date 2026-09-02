@@ -13,6 +13,10 @@ import {
   Building2,
   Calendar,
   Search,
+  GitCompare,
+  ArrowUp,
+  ArrowDown,
+  Minus,
 } from "lucide-react";
 import {
   BarChart,
@@ -116,6 +120,7 @@ function StatTile({
   tone = "neutral",
   progress,
   progressLabel,
+  delta,
 }: {
   label: string;
   value: string;
@@ -123,6 +128,7 @@ function StatTile({
   tone?: "neutral" | "good" | "bad";
   progress?: number;
   progressLabel?: string;
+  delta?: { current: number; prev: number; fmt?: (n: number) => string; suffix?: string; invert?: boolean };
 }) {
   const toneCls =
     tone === "good"
@@ -141,7 +147,10 @@ function StatTile({
       <span className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-blue-400 dark:bg-blue-500" />
       <div className="flex-1 p-4">
         <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
-        <p className={`text-2xl font-bold mt-1 ${toneCls}`}>{value}</p>
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-2">
+          <p className={`text-2xl font-bold ${toneCls}`}>{value}</p>
+          {delta && <Delta {...delta} />}
+        </div>
         {sub && <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{sub}</div>}
       </div>
       {typeof progress === "number" && (
@@ -162,17 +171,56 @@ function StatTile({
   );
 }
 
+// Change vs the comparison period.
+function Delta({
+  current,
+  prev,
+  fmt = (n: number) => fmtShort(Math.abs(n)),
+  suffix = "",
+  invert = false,
+}: {
+  current: number;
+  prev: number;
+  fmt?: (n: number) => string;
+  suffix?: string;
+  invert?: boolean;
+}) {
+  const diff = current - prev;
+  const pct = prev ? (diff / prev) * 100 : 0;
+  const flat = Math.abs(pct) < 0.5;
+  const good = invert ? diff < 0 : diff > 0;
+  const cls = flat
+    ? "text-gray-400 dark:text-gray-500"
+    : good
+      ? "text-emerald-600 dark:text-emerald-400"
+      : "text-red-600 dark:text-red-400";
+  const Icon = flat ? Minus : diff > 0 ? ArrowUp : ArrowDown;
+  return (
+    <span className={`inline-flex items-center gap-0.5 whitespace-nowrap text-[11px] font-medium ${cls}`}>
+      <Icon className="h-3 w-3" />
+      {fmt(diff)}
+      {suffix}
+      <span className="opacity-70">
+        ({pct >= 0 ? "+" : ""}
+        {pct.toFixed(0)}%)
+      </span>
+    </span>
+  );
+}
+
 // Semicircle gauge — Actual vs Target achievement (KAM-dashboard style).
 function GaugeTile({
   label,
   achievement,
   actual,
   target,
+  prevActual,
 }: {
   label: string;
   achievement: number;
   actual: number;
   target: number;
+  prevActual?: number;
 }) {
   const LEN = Math.PI * 40;
   const p = Math.max(0, Math.min(100, achievement));
@@ -202,6 +250,11 @@ function GaugeTile({
               {achievement}%
             </p>
             <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">achievement</p>
+            {typeof prevActual === "number" && (
+              <div className="mt-1">
+                <Delta current={actual} prev={prevActual} fmt={(n) => fmtOMR(Math.abs(n))} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -431,9 +484,19 @@ interface Props {
   period: string;
   quarter: string;
   year: string;
+  comparisonMode?: boolean;
+  comparisonQuarter?: string;
+  comparisonYear?: string;
 }
 
-export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
+export function IndirectCommissionDashboard({
+  period,
+  quarter,
+  year,
+  comparisonMode = false,
+  comparisonQuarter = "Q2",
+  comparisonYear = "2024",
+}: Props) {
   // Period comes from the top header (Yearly / Quarterly / Monthly).
   const granularity: "Month" | "Quarter" | "Year" =
     period === "Yearly" ? "Year" : period === "Monthly" ? "Month" : "Quarter";
@@ -462,6 +525,20 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
     () => getIndirectData({ granularity, partner, quarter, year }),
     [granularity, partner, quarter, year],
   );
+
+  // Comparison-period dataset (only used when Compare is on in the header).
+  const P = React.useMemo(
+    () =>
+      comparisonMode
+        ? getIndirectData({ granularity, partner, quarter: comparisonQuarter, year: comparisonYear })
+        : null,
+    [comparisonMode, granularity, partner, comparisonQuarter, comparisonYear],
+  );
+
+  const cmpLabel =
+    granularity === "Year"
+      ? `${year} vs ${comparisonYear}`
+      : `${quarter} ${year} vs ${comparisonQuarter} ${comparisonYear}`;
 
   const crRows = D.crPerformance.filter((c) => {
     const q = crSearch.trim().toLowerCase();
@@ -521,8 +598,27 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
     pct: revContribTotal ? (r.value / revContribTotal) * 100 : 0,
   }));
 
+  // Merge the comparison-period series into the chart data when Compare is on.
+  const activationByTypeData = D.activationByType.map((a, i) => ({
+    ...a,
+    prior: P?.activationByType[i]?.actual,
+  }));
+  const netActivationsData = D.netActivationsTrend.map((m, i) => ({
+    ...m,
+    priorActivations: P?.netActivationsTrend[i]?.activations,
+  }));
+
   return (
     <div className="space-y-3">
+      {comparisonMode && (
+        <div className="flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs text-indigo-800 dark:border-indigo-800/50 dark:bg-indigo-900/20 dark:text-indigo-200">
+          <GitCompare className="h-4 w-4 shrink-0" />
+          <span>
+            Comparison mode — <span className="font-semibold">{cmpLabel}</span>. Figures below show the change vs the comparison period.
+          </span>
+        </div>
+      )}
+
       <Tabs defaultValue="performance" className="space-y-3">
         <TabsList className="inline-flex h-auto gap-1 rounded-xl border border-slate-200 bg-slate-100/80 p-1 shadow-sm dark:border-gray-700/60 dark:bg-gray-800/50">
           {["performance", "commission"].map((v) => (
@@ -545,6 +641,7 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
               achievement={D.revenueAchievement}
               actual={revenueActual}
               target={revenueTarget}
+              prevActual={P?.revenueActual}
             />
             <StatTile
               label="Activations — Actual vs Target"
@@ -553,6 +650,11 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
               sub={`Target ${fmtNum(totalTarget)}`}
               progress={(totalActual / totalTarget) * 100}
               progressLabel={`of target · ${fmtNum(totalTarget)}`}
+              delta={
+                P
+                  ? { current: totalActual, prev: P.activationByType.reduce((s, a) => s + a.actual, 0) }
+                  : undefined
+              }
             />
             <StatTile
               label="Net Activations"
@@ -561,6 +663,7 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
               sub={`${fmtNum(totalActivations)} activations − ${fmtNum(totalTerminations)} terminations`}
               progress={(netActivations / totalActivations) * 100}
               progressLabel="activation retention"
+              delta={P ? { current: netActivations, prev: P.netActivations } : undefined}
             />
             <StatTile
               label="Inactive CRs (2 yrs)"
@@ -569,6 +672,7 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
               sub="No activations recorded in last 24 months"
               progress={(inactiveCRs / crBase) * 100}
               progressLabel={`of ${fmtNum(crBase)} CRs`}
+              delta={P ? { current: inactiveCRs, prev: P.inactiveCRs, fmt: (n) => fmtNum(Math.abs(Math.round(n))), invert: true } : undefined}
             />
           </div>
 
@@ -594,6 +698,8 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
                   period={period}
                   quarter={quarter}
                   year={year}
+                  comparisonMode={comparisonMode}
+                  comparisonYear={comparisonYear}
                   selectedSegments={["All"]}
                   selectedVerticals={["All Verticals"]}
                 />
@@ -692,17 +798,24 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
             {/* Performance by Activation type */}
             <SectionCard icon={<Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />} title="Performance by Activation Type">
               <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={D.activationByType} margin={{ top: 20 }}>
+                <BarChart data={activationByTypeData} margin={{ top: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                   <XAxis dataKey="type" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
                   <RTooltip formatter={(v: number) => fmtNum(v)} />
                   <Legend />
                   <Bar dataKey="target" name="Target" fill="#cbd5e1" radius={[4, 4, 0, 0]}>
-                    <LabelList dataKey="target" position="top" formatter={fmtShort} className="fill-gray-500 text-[11px]" />
+                    {!comparisonMode && (
+                      <LabelList dataKey="target" position="top" formatter={fmtShort} className="fill-gray-500 text-[11px]" />
+                    )}
                   </Bar>
+                  {comparisonMode && (
+                    <Bar dataKey="prior" name={`Prior (${comparisonQuarter} ${comparisonYear})`} fill="#a5b4fc" radius={[4, 4, 0, 0]} />
+                  )}
                   <Bar dataKey="actual" name="Actual" fill="#3b82f6" radius={[4, 4, 0, 0]}>
-                    <LabelList dataKey="actual" position="top" formatter={fmtShort} className="fill-gray-900 dark:fill-gray-100 text-[11px] font-semibold" />
+                    {!comparisonMode && (
+                      <LabelList dataKey="actual" position="top" formatter={fmtShort} className="fill-gray-900 dark:fill-gray-100 text-[11px] font-semibold" />
+                    )}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -914,17 +1027,24 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <SectionCard icon={<Repeat className="w-5 h-5 text-blue-600 dark:text-blue-400" />} title="Net Activations (Activations vs Terminations)">
               <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={D.netActivationsTrend} margin={{ top: 20 }}>
+                <BarChart data={netActivationsData} margin={{ top: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                   <XAxis dataKey="period" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
                   <RTooltip formatter={(v: number) => fmtNum(v)} />
                   <Legend />
+                  {comparisonMode && (
+                    <Bar dataKey="priorActivations" name="Prior activations" fill="#6ee7b7" radius={[4, 4, 0, 0]} />
+                  )}
                   <Bar dataKey="activations" name="Activations" fill="#10b981" radius={[4, 4, 0, 0]}>
-                    <LabelList dataKey="activations" position="top" formatter={fmtShort} className="fill-gray-900 dark:fill-gray-100 text-[11px] font-semibold" />
+                    {!comparisonMode && (
+                      <LabelList dataKey="activations" position="top" formatter={fmtShort} className="fill-gray-900 dark:fill-gray-100 text-[11px] font-semibold" />
+                    )}
                   </Bar>
                   <Bar dataKey="terminations" name="Terminations" fill="#ef4444" radius={[4, 4, 0, 0]}>
-                    <LabelList dataKey="terminations" position="top" formatter={fmtShort} className="fill-gray-500 text-[11px]" />
+                    {!comparisonMode && (
+                      <LabelList dataKey="terminations" position="top" formatter={fmtShort} className="fill-gray-500 text-[11px]" />
+                    )}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -1079,18 +1199,23 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
                     </td>
                   </tr>
                 )}
-                {visibleRows.map((r, i) => (
+                {visibleRows.map((r, i) => {
+                  const pr = P?.planRows.find((x) => x.plan === r.plan);
+                  return (
                   <Row key={r.plan} i={i}>
                     <td className={`${td} sticky left-0 bg-white font-medium text-gray-900 dark:bg-[#07112F] dark:text-gray-100`}>
                       {r.plan}
                     </td>
                     <td className={tdR}>{r.weight}%</td>
                     <td className={tdR}>
-                      <div className="flex items-center justify-end gap-2">
-                        <span className={`font-semibold ${r.achievement >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-gray-100"}`}>
-                          {r.achievement}%
-                        </span>
-                        <MiniBar value={r.achievement} tone={r.achievement >= 100 ? "green" : r.achievement >= 80 ? "amber" : "red"} />
+                      <div className="flex flex-col items-end">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-semibold ${r.achievement >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-gray-100"}`}>
+                            {r.achievement}%
+                          </span>
+                          <MiniBar value={r.achievement} tone={r.achievement >= 100 ? "green" : r.achievement >= 80 ? "amber" : "red"} />
+                        </div>
+                        {pr && <Delta current={r.achievement} prev={pr.achievement} fmt={(n) => Math.abs(Math.round(n)).toString()} suffix="pp" />}
                       </div>
                     </td>
                     <td className={tdR}>
@@ -1100,7 +1225,12 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
                       </div>
                     </td>
                     <td className={tdR}>{r.commissionPct}%</td>
-                    <td className={`${tdR} font-semibold text-emerald-600 dark:text-emerald-400`}>{fmtOMR(r.commissionPaid)}</td>
+                    <td className={`${tdR} font-semibold text-emerald-600 dark:text-emerald-400`}>
+                      <div className="flex flex-col items-end">
+                        <span>{fmtOMR(r.commissionPaid)}</span>
+                        {pr && <Delta current={r.commissionPaid} prev={pr.commissionPaid} fmt={(n) => fmtOMR(Math.abs(n))} />}
+                      </div>
+                    </td>
                     <td className={tdR}>{fmtNum(r.activations)}</td>
                     <td className={tdR}>{fmtNum(r.eligibleActivations)}</td>
                     <td className={td}>
@@ -1134,7 +1264,8 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
                       )}
                     </td>
                   </Row>
-                ))}
+                );
+                })}
               </tbody>
               {visibleRows.length > 0 && (
               <tfoot className="border-t-2 border-gray-200 bg-gray-50/60 dark:border-gray-700/60 dark:bg-white/[0.03]">
