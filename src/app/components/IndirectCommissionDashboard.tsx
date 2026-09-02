@@ -553,7 +553,7 @@ function StatBox({
           ? "text-amber-600 dark:text-amber-400"
           : "text-gray-900 dark:text-gray-100";
   return (
-    <div className="rounded-lg border border-gray-200/70 bg-gray-50/70 p-2.5 dark:border-gray-700/60 dark:bg-white/[0.03]">
+    <div className="rounded-lg border border-gray-200 bg-white p-2.5 dark:border-gray-700/60 dark:bg-[#07112F]">
       <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">{label}</p>
       <p className={`mt-0.5 text-base font-bold ${cls}`}>{value}</p>
       {sub && <p className="text-[10px] text-gray-400 dark:text-gray-500">{sub}</p>}
@@ -573,9 +573,9 @@ function DlgLabel({ children }: { children: React.ReactNode }) {
 // Styled table for dialogs.
 function DlgTable({ head, children }: { head: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700/60">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700/60 dark:bg-[#07112F]">
       <table className="w-full text-sm">
-        <thead className="bg-gray-50 text-[10px] uppercase tracking-wide text-gray-400 dark:bg-white/[0.03] dark:text-gray-500">
+        <thead className="border-b border-gray-200 bg-white text-[10px] uppercase tracking-wide text-gray-400 dark:border-gray-700/60 dark:bg-[#07112F] dark:text-gray-500">
           {head}
         </thead>
         <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">{children}</tbody>
@@ -633,7 +633,9 @@ function StatDetailDialog({
 
   return (
     <Dialog open={open !== null} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[85vh] gap-0 overflow-y-auto sm:max-w-xl">
+      <DialogContent
+        className={`max-h-[85vh] gap-0 overflow-y-auto ${open === "inactive" ? "sm:max-w-3xl" : "sm:max-w-2xl"}`}
+      >
         <DialogHeader>
           <DialogTitle>{open ? titles[open] : ""}</DialogTitle>
           <DialogDescription>
@@ -724,7 +726,7 @@ function StatDetailDialog({
                   </tr>
                 );
               })}
-              <tr className="bg-gray-50/60 font-semibold text-gray-900 dark:bg-white/[0.03] dark:text-gray-100">
+              <tr className="border-t-2 border-gray-200 bg-white font-semibold text-gray-900 dark:border-gray-700 dark:bg-[#07112F] dark:text-gray-100">
                 <td className={dlgTd}>Total</td>
                 <td className={dlgTdR}>{fmtNum(totTarget)}</td>
                 <td className={dlgTdR}>{fmtNum(totActual)}</td>
