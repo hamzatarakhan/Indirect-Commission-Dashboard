@@ -481,7 +481,7 @@ export function DashboardHeader({
           </div>
 
           {/* Profile & Actions Section */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-stretch gap-2 sm:gap-3">
             {/* Profile Section */}
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700/50 transition-colors duration-300 flex-shrink-0 flex-1 sm:flex-initial">
               {/* Avatar - Always show logged-in user */}
@@ -510,7 +510,7 @@ export function DashboardHeader({
             </div>
 
             {/* Action Buttons - Commission & Dark Mode */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div className="flex items-stretch gap-2 sm:gap-3 flex-shrink-0">
               {/* Navigate to Indirect Commission Dashboard — hidden for now */}
               {false && onNavigateToIndirectCommission && (
                 <TooltipProvider>
@@ -584,7 +584,7 @@ export function DashboardHeader({
                 </span>
               )}
               
-              <DarkModeToggle />
+              <DarkModeToggle className="h-full min-h-[2.25rem] w-9" />
             </div>
           </div>
         </div>

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { Button } from './ui/button';
+import { cn } from './ui/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
-export function DarkModeToggle() {
+export function DarkModeToggle({ className }: { className?: string }) {
   const [isDark, setIsDark] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
@@ -60,7 +61,7 @@ export function DarkModeToggle() {
       <Button
         variant="outline"
         size="sm"
-        className="h-9 w-9 p-0 border-gray-200 hover:bg-gray-50 transition-all duration-300"
+        className={cn("h-9 w-9 p-0 border-gray-200 hover:bg-gray-50 transition-all duration-300", className)}
         disabled
       >
         <Sun className="h-4 w-4" />
@@ -73,7 +74,10 @@ export function DarkModeToggle() {
       variant="outline"
       size="sm"
       onClick={toggleTheme}
-      className="h-9 w-9 p-0 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 relative overflow-hidden group"
+      className={cn(
+        "h-9 w-9 p-0 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 relative overflow-hidden group",
+        className,
+      )}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
