@@ -363,6 +363,42 @@ function TableTools({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Compact dropdown filter for table toolbars.
+function FilterSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+}) {
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="h-9 w-full text-xs sm:w-auto sm:min-w-[132px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((o) => (
+          <SelectItem key={o} value={o}>
+            {o}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+// A labelled field for the filter card.
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-xs text-gray-500 dark:text-gray-400">{label}</label>
+      {children}
+    </div>
+  );
+}
+
 function SegTabs<T extends string>({
   value,
   onChange,
@@ -398,7 +434,10 @@ interface Props {
 }
 
 export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
-  const [granularity, setGranularity] = React.useState<"Month" | "Quarter" | "Year">("Quarter");
+  // Period comes from the top header (Yearly / Quarterly / Monthly).
+  const granularity: "Month" | "Quarter" | "Year" =
+    period === "Yearly" ? "Year" : period === "Monthly" ? "Month" : "Quarter";
+
   const [partner, setPartner] = React.useState<string>(PARTNERS[0]);
   const [planFilter, setPlanFilter] = React.useState("All Plans");
 
@@ -411,7 +450,12 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
   const [atSeg, setAtSeg] = React.useState<"all" | "Base" | "Other Segment">("all");
   const [hvSearch, setHvSearch] = React.useState("");
   const [hvStatus, setHvStatus] = React.useState<"all" | "eligible" | "hold">("all");
+
+  // Achievement vs Payout by Plan filters
   const [planSearch, setPlanSearch] = React.useState("");
+  const [planStatus, setPlanStatus] = React.useState("All statuses");
+  const [plan2ndBill, setPlan2ndBill] = React.useState("Any 2nd bill");
+  const [planElig, setPlanElig] = React.useState("Any eligibility");
 
   // Everything the dashboard renders is derived here from the active filters.
   const D = React.useMemo(
@@ -444,8 +488,21 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
     planFilter === "All Plans" ? D.planRows : D.planRows.filter((r) => r.plan === planFilter)
   ).filter((r) => {
     const q = planSearch.trim().toLowerCase();
-    return !q || r.plan.toLowerCase().includes(q);
+    const matchesSearch = !q || r.plan.toLowerCase().includes(q);
+    const matchesStatus =
+      planStatus === "All statuses" ||
+      (planStatus === "Qualified" ? r.qualified : !r.qualified);
+    const matches2ndBill = plan2ndBill === "Any 2nd bill" || r.secondBillStatus === plan2ndBill;
+    const matchesElig = planElig === "Any eligibility" || r.eligibilityImpact === planElig;
+    return matchesSearch && matchesStatus && matches2ndBill && matchesElig;
   });
+
+  const planFiltersActive =
+    planStatus !== "All statuses" ||
+    plan2ndBill !== "Any 2nd bill" ||
+    planElig !== "Any eligibility" ||
+    planFilter !== "All Plans" ||
+    planSearch.trim() !== "";
 
   const totalActual = D.activationByType.reduce((s, a) => s + a.actual, 0);
   const totalTarget = D.activationByType.reduce((s, a) => s + a.target, 0);
@@ -466,63 +523,6 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* Filters */}
-      <div className={`${cardShell} p-4`}>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:items-end sm:gap-4 lg:flex lg:flex-wrap">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-500 dark:text-gray-400">Period</label>
-            <Select value={granularity} onValueChange={(v) => setGranularity(v as any)}>
-              <SelectTrigger className="w-full lg:w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Month">Month</SelectItem>
-                <SelectItem value="Quarter">Quarter</SelectItem>
-                <SelectItem value="Year">Year</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-500 dark:text-gray-400">Partner</label>
-            <Select value={partner} onValueChange={setPartner}>
-              <SelectTrigger className="w-full lg:w-[220px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PARTNERS.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
-            <label className="text-xs text-gray-500 dark:text-gray-400">Commission Plan</label>
-            <Select value={planFilter} onValueChange={setPlanFilter}>
-              <SelectTrigger className="w-full lg:w-[280px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All Plans">All Plans</SelectItem>
-                {COMMISSION_PLANS.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="text-xs text-gray-400 dark:text-gray-500 sm:col-span-2 sm:self-center sm:text-right lg:ml-auto lg:col-span-1">
-            {granularity === "Year"
-              ? year
-              : granularity === "Quarter"
-                ? `${quarter} ${year}`
-                : `${period} ${year}`}
-          </div>
-        </div>
-      </div>
-
       <Tabs defaultValue="performance" className="space-y-3">
         <TabsList className="inline-flex h-auto gap-1 rounded-xl border border-slate-200 bg-slate-100/80 p-1 shadow-sm dark:border-gray-700/60 dark:bg-gray-800/50">
           {["performance", "commission"].map((v) => (
@@ -984,6 +984,58 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
 
         {/* ================= COMMISSION ================= */}
         <TabsContent value="commission" className="space-y-6">
+          {/* Commission filters */}
+          <div className={`${cardShell} p-4`}>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+              <Field label="Partner">
+                <Select value={partner} onValueChange={setPartner}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PARTNERS.map((p) => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Commission Plan">
+                <Select value={planFilter} onValueChange={setPlanFilter}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All Plans">All Plans</SelectItem>
+                    {COMMISSION_PLANS.map((p) => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Qualification">
+                <FilterSelect
+                  value={planStatus}
+                  onChange={setPlanStatus}
+                  options={["All statuses", "Qualified", "Not Qualified"]}
+                />
+              </Field>
+              <Field label="2nd Bill / Eligibility">
+                <div className="flex gap-2">
+                  <FilterSelect
+                    value={plan2ndBill}
+                    onChange={setPlan2ndBill}
+                    options={["Any 2nd bill", "Confirmed", "Pending", "Not required"]}
+                  />
+                  <FilterSelect
+                    value={planElig}
+                    onChange={setPlanElig}
+                    options={["Any eligibility", "Reduced", "None"]}
+                  />
+                </div>
+              </Field>
+            </div>
+          </div>
+
           {/* Achievement vs Payout by Plan */}
           <SectionCard
             icon={<Wallet className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
@@ -991,6 +1043,20 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
             action={
               <TableTools>
                 <SearchInput value={planSearch} onChange={setPlanSearch} placeholder="Search plan" />
+                {planFiltersActive && (
+                  <button
+                    onClick={() => {
+                      setPlanSearch("");
+                      setPlanStatus("All statuses");
+                      setPlan2ndBill("Any 2nd bill");
+                      setPlanElig("Any eligibility");
+                      setPlanFilter("All Plans");
+                    }}
+                    className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+                  >
+                    Clear filters
+                  </button>
+                )}
                 <Pill tone="gray">
                   {visibleRows.filter((r) => r.qualified).length}/{visibleRows.length} qualified
                 </Pill>
@@ -1015,7 +1081,7 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
                 {visibleRows.length === 0 && (
                   <tr>
                     <td colSpan={11} className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
-                      No plans match “{planSearch}”.
+                      No plans match the current filters.
                     </td>
                   </tr>
                 )}
