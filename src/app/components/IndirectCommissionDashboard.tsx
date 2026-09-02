@@ -632,10 +632,17 @@ export function IndirectCommissionDashboard({
   }));
 
   // Merge the comparison-period series into the chart data when Compare is on.
-  const activationByTypeData = D.activationByType.map((a, i) => ({
-    ...a,
-    prior: P?.activationByType[i]?.actual,
-  }));
+  const activationByTypeData = D.activationByType.map((a, i) => {
+    const prior = P?.activationByType[i]?.actual;
+    const priorTarget = P?.activationByType[i]?.target;
+    return {
+      ...a,
+      prior,
+      priorTarget,
+      achv: a.target ? (a.actual / a.target) * 100 : 0,
+      priorAchv: prior != null && priorTarget ? (prior / priorTarget) * 100 : null,
+    };
+  });
   const netActivationsData = D.netActivationsTrend.map((m, i) => ({
     ...m,
     priorActivations: P?.netActivationsTrend[i]?.activations,
@@ -658,6 +665,65 @@ export function IndirectCommissionDashboard({
       <text x={x + width / 2} y={y - 15} textAnchor="middle" fill={color} fontSize={10} fontWeight={600}>
         {arrow} {pct >= 0 ? "+" : ""}{pct.toFixed(0)}%
       </text>
+    );
+  };
+  // Achievement (% of target) shown inside a bar.
+  const renderAchvPill = (key: "achv" | "priorAchv") => (props: any) => {
+    const { x, y, width, height, index } = props;
+    const row = activationByTypeData[index];
+    const v = row?.[key];
+    if (v == null || height < 18) return null;
+    return (
+      <text
+        x={x + width / 2}
+        y={y + height - 6}
+        textAnchor="middle"
+        fill={key === "achv" ? "#ffffff" : "#3730a3"}
+        fontSize={9}
+        fontWeight={700}
+      >
+        {v.toFixed(0)}%
+      </text>
+    );
+  };
+  // Rich tooltip: old vs new target + achievement per activation type.
+  const ActivationTypeTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length) return null;
+    const row = activationByTypeData.find((r) => r.type === label);
+    if (!row) return null;
+    const cell = "px-2 py-0.5 text-right tabular-nums";
+    return (
+      <div className="rounded-lg border border-gray-200 bg-white p-2.5 text-[11px] shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <p className="mb-1 font-semibold text-gray-900 dark:text-gray-100">{row.type}</p>
+        <table className="text-gray-600 dark:text-gray-300">
+          <thead>
+            <tr className="text-[10px] uppercase text-gray-400">
+              <th className="pr-2 text-left font-medium"> </th>
+              {row.prior != null && <th className={cell}>{`${comparisonQuarter} ${comparisonYear}`}</th>}
+              <th className={cell}>{`${quarter} ${year}`}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="pr-2 text-left">Activations</td>
+              {row.prior != null && <td className={cell}>{fmtNum(row.prior)}</td>}
+              <td className={`${cell} font-semibold text-gray-900 dark:text-gray-100`}>{fmtNum(row.actual)}</td>
+            </tr>
+            <tr>
+              <td className="pr-2 text-left">Target</td>
+              {row.prior != null && <td className={cell}>{row.priorTarget != null ? fmtNum(row.priorTarget) : "—"}</td>}
+              <td className={cell}>{fmtNum(row.target)}</td>
+            </tr>
+            <tr>
+              <td className="pr-2 text-left">Achievement</td>
+              {row.prior != null && <td className={cell}>{row.priorAchv != null ? `${row.priorAchv.toFixed(0)}%` : "—"}</td>}
+              <td className={`${cell} font-semibold ${row.achv >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                {row.achv.toFixed(0)}%
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     );
   };
   const planCmpData = D.planRows.map((r) => {
@@ -912,21 +978,27 @@ export function IndirectCommissionDashboard({
                   <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                   <XAxis dataKey="type" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
-                  <RTooltip formatter={(v: number) => fmtNum(v)} />
+                  {comparisonMode ? (
+                    <RTooltip content={<ActivationTypeTooltip />} />
+                  ) : (
+                    <RTooltip formatter={(v: number) => fmtNum(v)} />
+                  )}
                   <Legend />
-                  <Bar dataKey="target" name="Target" fill="#cbd5e1" radius={[4, 4, 0, 0]}>
-                    {!comparisonMode && (
+                  {!comparisonMode && (
+                    <Bar dataKey="target" name="Target" fill="#cbd5e1" radius={[4, 4, 0, 0]}>
                       <LabelList dataKey="target" position="top" formatter={fmtShort} className="fill-gray-500 text-[11px]" />
-                    )}
-                  </Bar>
-                  {comparisonMode && (
-                    <Bar dataKey="prior" name={`Prior (${comparisonQuarter} ${comparisonYear})`} fill="#a5b4fc" radius={[4, 4, 0, 0]}>
-                      <LabelList dataKey="prior" position="top" formatter={fmtShort} className="fill-indigo-400 text-[10px]" />
                     </Bar>
                   )}
-                  <Bar dataKey="actual" name="Actual" fill="#3b82f6" radius={[4, 4, 0, 0]}>
+                  {comparisonMode && (
+                    <Bar dataKey="prior" name={`Prior · ${comparisonQuarter} ${comparisonYear}`} fill="#a5b4fc" radius={[4, 4, 0, 0]}>
+                      <LabelList dataKey="prior" position="top" formatter={fmtShort} className="fill-indigo-400 text-[10px]" />
+                      <LabelList dataKey="prior" content={renderAchvPill("priorAchv")} />
+                    </Bar>
+                  )}
+                  <Bar dataKey="actual" name={comparisonMode ? `Now · ${quarter} ${year}` : "Actual"} fill="#3b82f6" radius={[4, 4, 0, 0]}>
                     <LabelList dataKey="actual" position="top" formatter={fmtShort} className="fill-gray-900 dark:fill-gray-100 text-[11px] font-semibold" />
                     {comparisonMode && <LabelList dataKey="actual" content={renderTypeDelta} />}
+                    {comparisonMode && <LabelList dataKey="actual" content={renderAchvPill("achv")} />}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
