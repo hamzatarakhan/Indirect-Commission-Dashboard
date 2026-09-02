@@ -752,12 +752,12 @@ export function IndirectCommissionDashboard({
       )}
 
       <Tabs defaultValue="performance" className="space-y-3">
-        <TabsList className="inline-flex h-auto gap-1 rounded-xl border border-slate-200 bg-slate-100/80 p-1 shadow-sm dark:border-gray-700/60 dark:bg-gray-800/50">
+        <TabsList className="inline-flex h-auto gap-1 rounded-xl border border-slate-200 bg-slate-100/80 p-1 dark:border-gray-700/60 dark:bg-gray-800/50">
           {["performance", "commission"].map((v) => (
             <TabsTrigger
               key={v}
               value={v}
-              className="rounded-lg border-0 px-6 py-1.5 text-[13px] font-medium capitalize text-[rgba(0,11,37,0.64)] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#000b25] data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-slate-200 dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-gray-100 dark:data-[state=active]:ring-gray-600/60 sm:px-10 sm:py-2"
+              className="rounded-lg border-0 px-6 py-1.5 text-[13px] font-medium capitalize text-[rgba(0,11,37,0.64)] transition-all duration-300 hover:text-[#000b25] data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm dark:text-gray-400 dark:hover:text-gray-200 dark:data-[state=active]:bg-blue-600 dark:data-[state=active]:text-white sm:px-10 sm:py-2"
             >
               {v}
             </TabsTrigger>
