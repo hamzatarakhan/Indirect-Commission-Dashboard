@@ -667,23 +667,32 @@ export function IndirectCommissionDashboard({
       </text>
     );
   };
-  // Achievement (% of target) shown inside a bar.
+  // Achievement (% of target) as a small pill inside a bar (RevenueMatrix style).
   const renderAchvPill = (key: "achv" | "priorAchv") => (props: any) => {
     const { x, y, width, height, index } = props;
     const row = activationByTypeData[index];
     const v = row?.[key];
-    if (v == null || height < 18) return null;
+    if (v == null || height < 24 || width < 24) return null;
+    const label = `${v.toFixed(0)}%`;
+    const pw = label.length * 5.6 + 10;
+    const ph = 14;
+    const cx = x + width / 2;
+    const py = y + height - ph - 4;
+    const good = v >= 100;
     return (
-      <text
-        x={x + width / 2}
-        y={y + height - 6}
-        textAnchor="middle"
-        fill={key === "achv" ? "#ffffff" : "#3730a3"}
-        fontSize={9}
-        fontWeight={700}
-      >
-        {v.toFixed(0)}%
-      </text>
+      <g>
+        <rect x={cx - pw / 2} y={py} width={pw} height={ph} rx={7} fill="#ffffff" opacity={0.92} />
+        <text
+          x={cx}
+          y={py + ph - 4}
+          textAnchor="middle"
+          fill={good ? "#059669" : "#d97706"}
+          fontSize={9}
+          fontWeight={700}
+        >
+          {label}
+        </text>
+      </g>
     );
   };
   // Rich tooltip: old vs new target + achievement per activation type.
