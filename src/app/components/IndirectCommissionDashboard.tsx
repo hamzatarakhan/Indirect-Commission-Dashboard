@@ -401,6 +401,7 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
   const [overviewView, setOverviewView] = React.useState<"charts" | "table">("charts");
   const [crSearch, setCrSearch] = React.useState("");
   const [atSearch, setAtSearch] = React.useState("");
+  const [atSeg, setAtSeg] = React.useState<"all" | "Base" | "Other Segment">("all");
   const [hvSearch, setHvSearch] = React.useState("");
   const [hvStatus, setHvStatus] = React.useState<"all" | "eligible" | "hold">("all");
   const [planSearch, setPlanSearch] = React.useState("");
@@ -418,7 +419,9 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
 
   const atRows = D.activationTypeBreakdown.filter((r) => {
     const q = atSearch.trim().toLowerCase();
-    return !q || `${r.channel} ${r.segment}`.toLowerCase().includes(q);
+    const matchesQuery = !q || `${r.channel} ${r.segment}`.toLowerCase().includes(q);
+    const matchesSeg = atSeg === "all" || r.segment === atSeg;
+    return matchesQuery && matchesSeg;
   });
 
   const hvRows = D.huntingValidation.filter((h) => {
@@ -752,7 +755,16 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
             title="Activation Type Analysis (Base vs Other Segment)"
             action={
               <TableTools>
-                <SearchInput value={atSearch} onChange={setAtSearch} placeholder="Filter channel / segment" />
+                <SegTabs
+                  value={atSeg}
+                  onChange={setAtSeg}
+                  options={[
+                    { value: "all", label: "All" },
+                    { value: "Base", label: "Base" },
+                    { value: "Other Segment", label: "Other Segment" },
+                  ]}
+                />
+                <SearchInput value={atSearch} onChange={setAtSearch} placeholder="Filter channel" />
                 <span className="text-xs text-gray-400 dark:text-gray-500">
                   {atRows.length} of {D.activationTypeBreakdown.length}
                 </span>
