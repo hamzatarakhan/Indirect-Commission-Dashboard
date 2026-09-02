@@ -734,6 +734,9 @@ export function IndirectCommissionDashboard({
               const tRevA = crRows.reduce((s, c) => s + c.revenueActual, 0);
               const tRevT = crRows.reduce((s, c) => s + c.revenueTarget, 0);
               const tAct = crRows.reduce((s, c) => s + c.activations, 0);
+              const priorFor = (cr: string) => P?.crPerformance.find((x) => x.cr === cr);
+              const pRevA = P ? crRows.reduce((s, c) => s + (priorFor(c.cr)?.revenueActual ?? 0), 0) : 0;
+              const pAct = P ? crRows.reduce((s, c) => s + (priorFor(c.cr)?.activations ?? 0), 0) : 0;
               return (
                 <DataTable minWidth={880}>
                   <HeadRow>
@@ -753,7 +756,9 @@ export function IndirectCommissionDashboard({
                         </td>
                       </tr>
                     )}
-                    {crRows.map((c, i) => (
+                    {crRows.map((c, i) => {
+                      const pc = priorFor(c.cr);
+                      return (
                       <Row key={c.cr} i={i}>
                         <td className={td}>
                           <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600 dark:bg-white/[0.06] dark:text-gray-400">
@@ -762,24 +767,38 @@ export function IndirectCommissionDashboard({
                         </td>
                         <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{c.name}</td>
                         <td className={`${td} text-gray-500 dark:text-gray-400`}>{c.partner}</td>
-                        <td className={`${tdR} font-semibold text-emerald-600 dark:text-emerald-400`}>{fmtOMR(c.revenueActual)}</td>
+                        <td className={tdR}>
+                          <div className="flex flex-col items-end">
+                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">{fmtOMR(c.revenueActual)}</span>
+                            {pc && <Delta current={c.revenueActual} prev={pc.revenueActual} fmt={(n) => fmtOMR(Math.abs(n))} />}
+                          </div>
+                        </td>
                         <td className={tdR}>{fmtOMR(c.revenueTarget)}</td>
                         <td className={tdR}>
-                          <div className="flex items-center justify-end gap-2">
-                            <span className={`font-semibold ${c.achievement >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-gray-100"}`}>
-                              {c.achievement}%
-                            </span>
-                            <MiniBar value={c.achievement} tone={c.achievement >= 100 ? "green" : c.achievement >= 90 ? "amber" : "red"} />
+                          <div className="flex flex-col items-end">
+                            <div className="flex items-center justify-end gap-2">
+                              <span className={`font-semibold ${c.achievement >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-gray-100"}`}>
+                                {c.achievement}%
+                              </span>
+                              <MiniBar value={c.achievement} tone={c.achievement >= 100 ? "green" : c.achievement >= 90 ? "amber" : "red"} />
+                            </div>
+                            {pc && <Delta current={c.achievement} prev={pc.achievement} fmt={(n) => Math.abs(Math.round(n)).toString()} suffix="pp" />}
                           </div>
                         </td>
                         <td className={tdR}>
-                          <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(c.activations)}</span>
-                          <span className="ml-1 text-[10px] text-gray-400 dark:text-gray-500">
-                            H{fmtNum(c.hunting)}·F{fmtNum(c.farming)}·P{fmtNum(c.portIn)}·U{fmtNum(c.upgrades)}
-                          </span>
+                          <div className="flex flex-col items-end">
+                            <span>
+                              <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(c.activations)}</span>
+                              <span className="ml-1 text-[10px] text-gray-400 dark:text-gray-500">
+                                H{fmtNum(c.hunting)}·F{fmtNum(c.farming)}·P{fmtNum(c.portIn)}·U{fmtNum(c.upgrades)}
+                              </span>
+                            </span>
+                            {pc && <Delta current={c.activations} prev={pc.activations} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} />}
+                          </div>
                         </td>
                       </Row>
-                    ))}
+                      );
+                    })}
                   </tbody>
                   {crRows.length > 0 && (
                     <tfoot className="border-t-2 border-gray-200 bg-gray-50/60 dark:border-gray-700/60 dark:bg-white/[0.03]">
@@ -787,10 +806,20 @@ export function IndirectCommissionDashboard({
                         <td className={`${td} font-semibold text-gray-900 dark:text-gray-100`} colSpan={3}>
                           Total ({crRows.length} CRs)
                         </td>
-                        <td className={`${tdR} font-bold text-emerald-600 dark:text-emerald-400`}>{fmtOMR(tRevA)}</td>
+                        <td className={tdR}>
+                          <div className="flex flex-col items-end">
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400">{fmtOMR(tRevA)}</span>
+                            {P && <Delta current={tRevA} prev={pRevA} fmt={(n) => fmtOMR(Math.abs(n))} />}
+                          </div>
+                        </td>
                         <td className={`${tdR} font-semibold`}>{fmtOMR(tRevT)}</td>
                         <td className={`${tdR} font-bold`}>{clampAch((tRevA / tRevT) * 100)}%</td>
-                        <td className={`${tdR} font-bold text-gray-900 dark:text-gray-100`}>{fmtNum(tAct)}</td>
+                        <td className={tdR}>
+                          <div className="flex flex-col items-end">
+                            <span className="font-bold text-gray-900 dark:text-gray-100">{fmtNum(tAct)}</span>
+                            {P && <Delta current={tAct} prev={pAct} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} />}
+                          </div>
+                        </td>
                       </tr>
                     </tfoot>
                   )}
