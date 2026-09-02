@@ -320,12 +320,78 @@ function GaugeTile({
 
 // ---- Table primitives (match the app's data-table look) --------------------
 
-function DataTable({ children, minWidth = 640 }: { children: React.ReactNode; minWidth?: number }) {
+function DataTable({
+  children,
+  minWidth = 640,
+  footer,
+}: {
+  children: React.ReactNode;
+  minWidth?: number;
+  footer?: React.ReactNode;
+}) {
   return (
-    <div className="scrollbar-thin overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700/60">
-      <table className="w-full border-collapse" style={{ minWidth }}>
-        {children}
-      </table>
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700/60">
+      <div className="scrollbar-thin overflow-x-auto rounded-xl">
+        <table className="w-full border-collapse" style={{ minWidth }}>
+          {children}
+        </table>
+      </div>
+      {footer}
+    </div>
+  );
+}
+
+// Client-side pagination. The pager only appears when there is more than one page.
+function usePaged<T>(rows: T[], pageSize = 10, resetKey?: unknown) {
+  const [page, setPage] = React.useState(1);
+  React.useEffect(() => setPage(1), [resetKey]);
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+  const p = Math.min(page, pageCount);
+  return {
+    pageRows: rows.slice((p - 1) * pageSize, p * pageSize),
+    page: p,
+    setPage,
+    pageCount,
+    total: rows.length,
+    from: rows.length === 0 ? 0 : (p - 1) * pageSize + 1,
+    to: Math.min(p * pageSize, rows.length),
+  };
+}
+
+function Pager({
+  page,
+  pageCount,
+  from,
+  to,
+  total,
+  onPage,
+}: {
+  page: number;
+  pageCount: number;
+  from: number;
+  to: number;
+  total: number;
+  onPage: (p: number) => void;
+}) {
+  if (pageCount <= 1) return null;
+  const btn =
+    "rounded-md border border-gray-200 px-2 py-1 font-medium text-gray-600 transition-colors enabled:hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700/60 dark:text-gray-300 dark:enabled:hover:bg-white/[0.04]";
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-4 py-2.5 text-xs text-gray-500 dark:border-gray-800/60 dark:text-gray-400">
+      <span>
+        Showing <b className="text-gray-700 dark:text-gray-200">{from}–{to}</b> of {total}
+      </span>
+      <div className="flex items-center gap-1.5">
+        <button className={btn} onClick={() => onPage(page - 1)} disabled={page <= 1}>
+          Prev
+        </button>
+        <span className="px-1 tabular-nums">
+          {page} / {pageCount}
+        </span>
+        <button className={btn} onClick={() => onPage(page + 1)} disabled={page >= pageCount}>
+          Next
+        </button>
+      </div>
     </div>
   );
 }
@@ -571,15 +637,26 @@ function DlgLabel({ children }: { children: React.ReactNode }) {
 }
 
 // Styled table for dialogs.
-function DlgTable({ head, children }: { head: React.ReactNode; children: React.ReactNode }) {
+function DlgTable({
+  head,
+  children,
+  footer,
+}: {
+  head: React.ReactNode;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700/60 dark:bg-[#07112F]">
-      <table className="w-full text-sm">
-        <thead className="border-b border-gray-200 bg-white text-[10px] uppercase tracking-wide text-gray-400 dark:border-gray-700/60 dark:bg-[#07112F] dark:text-gray-500">
-          {head}
-        </thead>
-        <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">{children}</tbody>
-      </table>
+    <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-700/60 dark:bg-[#07112F]">
+      <div className="overflow-x-auto rounded-lg">
+        <table className="w-full text-sm">
+          <thead className="border-b border-gray-200 bg-white text-[10px] uppercase tracking-wide text-gray-400 dark:border-gray-700/60 dark:bg-[#07112F] dark:text-gray-500">
+            {head}
+          </thead>
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">{children}</tbody>
+        </table>
+      </div>
+      {footer}
     </div>
   );
 }
@@ -623,6 +700,7 @@ function StatDetailDialog({
     const s = q.trim().toLowerCase();
     return !s || c.name.toLowerCase().includes(s) || c.partner.toLowerCase().includes(s) || c.cr.toLowerCase().includes(s);
   });
+  const inactivePage = usePaged(inactiveRows, 8, `${open}|${q}`);
 
   const titles: Record<string, string> = {
     revenue: "Revenue — Actual vs Target",
@@ -782,6 +860,7 @@ function StatDetailDialog({
               <SearchInput value={q} onChange={setQ} placeholder="Search company / partner / CR" width="w-full" />
             </div>
             <DlgTable
+              footer={<Pager {...inactivePage} onPage={inactivePage.setPage} />}
               head={
                 <tr>
                   <th className={dlgTh}>Company</th>
@@ -798,7 +877,7 @@ function StatDetailDialog({
                   </td>
                 </tr>
               )}
-              {inactiveRows.map((c) => (
+              {inactivePage.pageRows.map((c) => (
                 <tr key={c.cr}>
                   <td className={`${dlgTd} font-medium text-gray-900 dark:text-gray-100`}>{c.name}</td>
                   <td className={dlgTd}>{c.partner}</td>
@@ -913,6 +992,14 @@ export function IndirectCommissionDashboard({
     const matchesElig = planElig === "Any eligibility" || r.eligibilityImpact === planElig;
     return matchesSearch && matchesStatus && matches2ndBill && matchesElig;
   });
+
+  const crPage = usePaged(crRows, 10, crSearch);
+  const hvPage = usePaged(hvRows, 10, hvSearch + hvStatus);
+  const planPage = usePaged(
+    visibleRows,
+    10,
+    planSearch + planStatus + plan2ndBill + planElig + planFilter,
+  );
 
   const planFiltersActive =
     planStatus !== "All statuses" ||
@@ -1196,7 +1283,7 @@ export function IndirectCommissionDashboard({
               const pRevA = P ? crRows.reduce((s, c) => s + (priorFor(c.cr)?.revenueActual ?? 0), 0) : 0;
               const pAct = P ? crRows.reduce((s, c) => s + (priorFor(c.cr)?.activations ?? 0), 0) : 0;
               return (
-                <DataTable minWidth={880}>
+                <DataTable minWidth={880} footer={<Pager {...crPage} onPage={crPage.setPage} />}>
                   <HeadRow>
                     <Th>CR</Th>
                     <Th>Customer</Th>
@@ -1214,7 +1301,7 @@ export function IndirectCommissionDashboard({
                         </td>
                       </tr>
                     )}
-                    {crRows.map((c, i) => {
+                    {crPage.pageRows.map((c, i) => {
                       const pc = priorFor(c.cr);
                       return (
                       <Row key={c.cr} i={i}>
@@ -1576,7 +1663,7 @@ export function IndirectCommissionDashboard({
                 Point-in-time roster — shows the current period only, no period-over-period change.
               </p>
             )}
-            <DataTable minWidth={720}>
+            <DataTable minWidth={720} footer={<Pager {...hvPage} onPage={hvPage.setPage} />}>
               <HeadRow>
                 <Th>CR</Th>
                 <Th>Customer</Th>
@@ -1592,7 +1679,7 @@ export function IndirectCommissionDashboard({
                     </td>
                   </tr>
                 )}
-                {hvRows.map((h, i) => (
+                {hvPage.pageRows.map((h, i) => (
                   <Row key={h.cr} i={i}>
                     <td className={td}>
                       <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600 dark:bg-white/[0.06] dark:text-gray-400">
@@ -1838,7 +1925,7 @@ export function IndirectCommissionDashboard({
               </TableTools>
             }
           >
-            <DataTable minWidth={1200}>
+            <DataTable minWidth={1200} footer={<Pager {...planPage} onPage={planPage.setPage} />}>
               <HeadRow>
                 <Th>Plan</Th>
                 <Th align="right">Weight</Th>
@@ -1860,7 +1947,7 @@ export function IndirectCommissionDashboard({
                     </td>
                   </tr>
                 )}
-                {visibleRows.map((r, i) => {
+                {planPage.pageRows.map((r, i) => {
                   const pr = P?.planRows.find((x) => x.plan === r.plan);
                   return (
                   <Row key={r.plan} i={i}>
