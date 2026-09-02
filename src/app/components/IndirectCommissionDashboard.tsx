@@ -1498,8 +1498,15 @@ export function IndirectCommissionDashboard({
                       className="rounded-lg border border-gray-200/70 bg-gray-50/60 p-3 dark:border-gray-700/60 dark:bg-white/[0.03]"
                     >
                       <p className="text-[11px] text-gray-500 dark:text-gray-400">{x.k}</p>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{x.v}</p>
-                      {x.sub && <p className="text-[10px] text-gray-400 dark:text-gray-500">{x.sub}</p>}
+                      <p className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        <span>{x.v}</span>
+                        {x.sub && (
+                          <>
+                            <span className="h-3.5 w-px bg-gray-300 dark:bg-gray-600" />
+                            <span className="text-[11px] font-normal text-gray-400 dark:text-gray-500">{x.sub}</span>
+                          </>
+                        )}
+                      </p>
                     </div>
                   ))}
                 </div>
