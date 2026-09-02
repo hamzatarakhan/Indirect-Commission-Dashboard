@@ -425,7 +425,7 @@ function SearchInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-9 pr-8 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 dark:border-gray-700/60 dark:bg-white/[0.04] dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500/60 dark:focus:bg-white/[0.06] dark:focus:ring-blue-900/30"
+        className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-8 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 dark:border-gray-700/60 dark:bg-white/[0.04] dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500/60 dark:focus:bg-white/[0.06] dark:focus:ring-blue-900/30"
       />
       {value && (
         <button
@@ -494,12 +494,12 @@ function SegTabs<T extends string>({
   options: { value: T; label: string }[];
 }) {
   return (
-    <div className="flex gap-0.5 rounded-lg bg-gray-100 p-0.5 dark:bg-white/[0.06]">
+    <div className="flex h-9 items-stretch gap-0.5 rounded-lg bg-gray-100 p-0.5 dark:bg-white/[0.06]">
       {options.map((o) => (
         <button
           key={o.value}
           onClick={() => onChange(o.value)}
-          className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+          className={`flex items-center rounded-md px-3 text-xs font-medium transition-colors ${
             value === o.value
               ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100"
               : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
