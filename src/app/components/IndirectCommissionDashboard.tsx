@@ -1160,7 +1160,6 @@ export function IndirectCommissionDashboard({
             title="Hunting Validation — 2nd Bill / Payment"
             action={
               <TableTools>
-                <SearchInput value={hvSearch} onChange={setHvSearch} placeholder="Search CR or customer" />
                 <SegTabs
                   value={hvStatus}
                   onChange={setHvStatus}
@@ -1170,6 +1169,7 @@ export function IndirectCommissionDashboard({
                     { value: "hold", label: "On hold" },
                   ]}
                 />
+                <SearchInput value={hvSearch} onChange={setHvSearch} placeholder="Search CR or customer" />
                 <span className="text-xs text-gray-400 dark:text-gray-500">
                   {hvRows.length} of {D.huntingValidation.length}
                 </span>
