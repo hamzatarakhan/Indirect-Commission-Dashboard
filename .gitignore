@@ -40,3 +40,6 @@ Thumbs.db
 # misc scratch
 src/app/temp_section5.txt
 src/app/temp_update.txt
+
+# generated docs
+*.pdf
