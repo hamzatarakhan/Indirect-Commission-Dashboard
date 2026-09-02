@@ -265,20 +265,26 @@ function GaugeTile({
               </>
             )}
           </svg>
-          <div>
-            <p className="text-2xl font-bold leading-none" style={{ color }}>
-              {achievement}%
-            </p>
-            <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">achievement</p>
-            {pp !== null && (
-              <p className="text-[11px] text-indigo-500 dark:text-indigo-300">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#a5b4fc] align-middle" />{" "}
-                prior {Math.round(prevAchievement as number)}%
+          <div className="flex flex-1 items-end justify-between gap-2">
+            <div>
+              <p className="text-2xl font-bold leading-none" style={{ color }}>
+                {achievement}%
               </p>
-            )}
-            {hasPrev && (
-              <div className="mt-1">
-                <Delta current={actual} prev={prevActual as number} fmt={(n) => fmtOMR(Math.abs(n))} />
+              <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">achievement</p>
+            </div>
+            {(pp !== null || hasPrev) && (
+              <div className="shrink-0 text-right">
+                {pp !== null && (
+                  <p className="flex items-center justify-end gap-1 text-[11px] text-indigo-500 dark:text-indigo-300">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#a5b4fc]" />
+                    prior {Math.round(prevAchievement as number)}%
+                  </p>
+                )}
+                {hasPrev && (
+                  <div className="mt-0.5 flex justify-end">
+                    <Delta current={actual} prev={prevActual as number} fmt={(n) => fmtShort(Math.abs(n))} />
+                  </div>
+                )}
               </div>
             )}
           </div>
