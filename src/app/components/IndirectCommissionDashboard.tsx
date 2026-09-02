@@ -986,7 +986,7 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
         <TabsContent value="commission" className="space-y-6">
           {/* Commission filters */}
           <div className={`${cardShell} p-4`}>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               <Field label="Partner">
                 <Select value={partner} onValueChange={setPartner}>
                   <SelectTrigger className="w-full">
@@ -1012,27 +1012,6 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Qualification">
-                <FilterSelect
-                  value={planStatus}
-                  onChange={setPlanStatus}
-                  options={["All statuses", "Qualified", "Not Qualified"]}
-                />
-              </Field>
-              <Field label="2nd Bill / Eligibility">
-                <div className="flex gap-2">
-                  <FilterSelect
-                    value={plan2ndBill}
-                    onChange={setPlan2ndBill}
-                    options={["Any 2nd bill", "Confirmed", "Pending", "Not required"]}
-                  />
-                  <FilterSelect
-                    value={planElig}
-                    onChange={setPlanElig}
-                    options={["Any eligibility", "Reduced", "None"]}
-                  />
-                </div>
-              </Field>
             </div>
           </div>
 
@@ -1043,6 +1022,21 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
             action={
               <TableTools>
                 <SearchInput value={planSearch} onChange={setPlanSearch} placeholder="Search plan" />
+                <FilterSelect
+                  value={planStatus}
+                  onChange={setPlanStatus}
+                  options={["All statuses", "Qualified", "Not Qualified"]}
+                />
+                <FilterSelect
+                  value={plan2ndBill}
+                  onChange={setPlan2ndBill}
+                  options={["Any 2nd bill", "Confirmed", "Pending", "Not required"]}
+                />
+                <FilterSelect
+                  value={planElig}
+                  onChange={setPlanElig}
+                  options={["Any eligibility", "Reduced", "None"]}
+                />
                 {planFiltersActive && (
                   <button
                     onClick={() => {
