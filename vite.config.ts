@@ -17,6 +17,8 @@ function figmaAssetResolver() {
 }
 
 export default defineConfig({
+  // Served from a project subpath on GitHub Pages; root locally.
+  base: process.env.GITHUB_PAGES ? '/Indirect-Commission-Dashboard/' : '/',
   plugins: [
     figmaAssetResolver(),
     // The React and Tailwind plugins are both required for Make, even if
