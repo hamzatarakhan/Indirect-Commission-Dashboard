@@ -917,7 +917,7 @@ export function RevenueMatrix({
             <div className={headerRight ? 'flex w-full items-center gap-2.5 sm:w-auto' : 'contents'}>
               {headerRight && <div className="shrink-0">{headerRight}</div>}
             {/* CR Search Input */}
-            <div ref={searchRef} className="relative flex w-full items-center shrink-0 sm:w-[168px]" style={{ height: '36px' }}>
+            <div ref={searchRef} className="relative flex w-full items-center shrink-0 sm:w-[168px]" style={{ height: '2.25rem' }}>
               <div className="absolute inset-0 bg-[#f3f3f5] dark:bg-gray-800/50 rounded-[6.75px] transition-colors duration-300" />
               <div className="absolute left-[10px] top-1/2 -translate-y-1/2 z-10">
                 <svg className="block" width="14" height="14" fill="none" viewBox="0 0 14 14">
