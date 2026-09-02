@@ -16,6 +16,7 @@ interface RevenueMatrixProps {
   selectedVerticals?: string[];
   titleOverride?: string;
   headerRight?: React.ReactNode;
+  iconBoxed?: boolean;
 }
 
 export function RevenueMatrix({
@@ -28,7 +29,8 @@ export function RevenueMatrix({
   selectedSegments = ['All'],
   selectedVerticals = ['All Verticals'],
   titleOverride,
-  headerRight
+  headerRight,
+  iconBoxed = false
 }: RevenueMatrixProps) {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [hoveredGauge, setHoveredGauge] = useState<'year' | 'q1' | 'q2' | 'q3' | 'q4' | null>(null);
@@ -892,9 +894,15 @@ export function RevenueMatrix({
           {/* Header */}
           <div className="flex gap-2.5 items-center w-full justify-between">
             <div className="flex gap-2.5 items-center flex-1">
-              <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
-                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-              </div>
+              {iconBoxed ? (
+                <div className="shrink-0 rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
+                  <Target className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+              ) : (
+                <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
+                  <Target className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                </div>
+              )}
               <div className="flex-1 flex items-center gap-2">
                 <h3 className="font-['Roboto',sans-serif] font-medium text-[15px] sm:text-[17px] text-[#000b25] dark:text-gray-100 transition-colors duration-300" style={{ fontVariationSettings: "'wdth' 100" }}>
                   {titleOverride ?? 'Performance Overview'}

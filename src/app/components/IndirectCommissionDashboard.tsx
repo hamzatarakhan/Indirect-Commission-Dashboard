@@ -579,6 +579,7 @@ export function IndirectCommissionDashboard({ period, quarter, year }: Props) {
                 <RevenueMatrix
                   titleOverride="Performance Overview"
                   headerRight={viewToggle}
+                  iconBoxed
                   userRole="General Manager"
                   period={period}
                   quarter={quarter}
