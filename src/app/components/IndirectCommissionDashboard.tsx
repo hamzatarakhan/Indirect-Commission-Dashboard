@@ -41,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { RevenueMatrix } from "./RevenueMatrix";
 import { PARTNERS, COMMISSION_PLANS, getIndirectData } from "./indirectData";
 import { useIsMobile } from "./ui/use-mobile";
@@ -122,6 +123,7 @@ function StatTile({
   progress,
   progressLabel,
   delta,
+  onClick,
 }: {
   label: string;
   value: string;
@@ -130,6 +132,7 @@ function StatTile({
   progress?: number;
   progressLabel?: string;
   delta?: { current: number; prev: number; fmt?: (n: number) => string; suffix?: string; invert?: boolean };
+  onClick?: () => void;
 }) {
   const toneCls =
     tone === "good"
@@ -144,7 +147,12 @@ function StatTile({
         ? "bg-amber-500"
         : "bg-blue-500";
   return (
-    <div className="relative flex w-full flex-col overflow-hidden rounded-xl border border-[#E2E8F0] bg-white dark:border-[#E2E8F0]/20 dark:bg-[#07112F]">
+    <div
+      {...(onClick ? { role: "button", tabIndex: 0, onClick, onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } } : {})}
+      className={`relative flex w-full flex-col overflow-hidden rounded-xl border border-[#E2E8F0] bg-white dark:border-[#E2E8F0]/20 dark:bg-[#07112F] ${
+        onClick ? "cursor-pointer transition-colors hover:border-blue-300 hover:bg-blue-50/30 dark:hover:border-blue-500/50 dark:hover:bg-blue-500/[0.06]" : ""
+      }`}
+    >
       <span className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-blue-400 dark:bg-blue-500" />
       <div className="flex-1 p-4">
         <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
@@ -217,6 +225,7 @@ function GaugeTile({
   target,
   prevActual,
   prevAchievement,
+  onClick,
 }: {
   label: string;
   achievement: number;
@@ -224,6 +233,7 @@ function GaugeTile({
   target: number;
   prevActual?: number;
   prevAchievement?: number;
+  onClick?: () => void;
 }) {
   const LEN = Math.PI * 40;
   const INNER = Math.PI * 30;
@@ -233,7 +243,12 @@ function GaugeTile({
   const hasPrev = typeof prevActual === "number";
   const pp = typeof prevAchievement === "number" ? Math.max(0, Math.min(100, prevAchievement)) : null;
   return (
-    <div className="relative flex flex-col overflow-hidden rounded-xl border border-[#E2E8F0] bg-white dark:border-[#E2E8F0]/20 dark:bg-[#07112F]">
+    <div
+      {...(onClick ? { role: "button", tabIndex: 0, onClick, onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } } : {})}
+      className={`relative flex flex-col overflow-hidden rounded-xl border border-[#E2E8F0] bg-white dark:border-[#E2E8F0]/20 dark:bg-[#07112F] ${
+        onClick ? "cursor-pointer transition-colors hover:border-blue-300 hover:bg-blue-50/30 dark:hover:border-blue-500/50 dark:hover:bg-blue-500/[0.06]" : ""
+      }`}
+    >
       <span className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-blue-400 dark:bg-blue-500" />
       <div className="flex-1 p-4">
         <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
@@ -513,6 +528,202 @@ function SegTabs<T extends string>({
   );
 }
 
+// ---- Stat-tile detail dialog ---------------------------------------------
+
+type IndirectData = ReturnType<typeof getIndirectData>;
+
+function DRow({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-gray-100 py-1.5 text-sm last:border-0 dark:border-gray-800/60">
+      <span className="text-gray-500 dark:text-gray-400">{label}</span>
+      <span className="font-medium text-gray-900 dark:text-gray-100">{children}</span>
+    </div>
+  );
+}
+
+function StatDetailDialog({
+  open,
+  onClose,
+  D,
+  P,
+  cmpLabel,
+  quarter,
+  year,
+  comparisonQuarter,
+  comparisonYear,
+}: {
+  open: "revenue" | "activations" | "net" | "inactive" | null;
+  onClose: () => void;
+  D: IndirectData;
+  P: IndirectData | null;
+  cmpLabel: string;
+  quarter: string;
+  year: string;
+  comparisonQuarter: string;
+  comparisonYear: string;
+}) {
+  const priorCol = `${comparisonQuarter} ${comparisonYear}`;
+  const revTotal = D.revenueContribution.reduce((s, r) => s + r.value, 0);
+
+  const titles: Record<string, string> = {
+    revenue: "Revenue — Actual vs Target",
+    activations: "Activations by Type",
+    net: "Net Activations — Activations vs Terminations",
+    inactive: "Inactive CRs — no activation in 24+ months",
+  };
+
+  return (
+    <Dialog open={open !== null} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>{open ? titles[open] : ""}</DialogTitle>
+          {P && <DialogDescription>Comparison: {cmpLabel}</DialogDescription>}
+        </DialogHeader>
+
+        {open === "revenue" && (
+          <div>
+            <DRow label="Actual">{fmtOMR(D.revenueActual)}</DRow>
+            <DRow label="Target">{fmtOMR(D.revenueTarget)}</DRow>
+            <DRow label="Achievement">{D.revenueAchievement}%</DRow>
+            {P && (
+              <>
+                <DRow label={`Actual (${priorCol})`}>{fmtOMR(P.revenueActual)}</DRow>
+                <DRow label={`Achievement (${priorCol})`}>{P.revenueAchievement}%</DRow>
+              </>
+            )}
+            <p className="mb-1.5 mt-4 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              Revenue by activation type
+            </p>
+            {D.revenueContribution.map((r) => (
+              <DRow
+                key={r.name}
+                label={
+                  <span className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: r.color }} />
+                    {r.name}
+                  </span>
+                }
+              >
+                {fmtOMR(r.value)}{" "}
+                <span className="ml-1 text-xs text-gray-400">
+                  {revTotal ? ((r.value / revTotal) * 100).toFixed(1) : 0}%
+                </span>
+              </DRow>
+            ))}
+          </div>
+        )}
+
+        {open === "activations" && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                  <th className="py-1.5 pr-2 text-left font-medium">Type</th>
+                  <th className="px-2 py-1.5 text-right font-medium">Target</th>
+                  <th className="px-2 py-1.5 text-right font-medium">Actual</th>
+                  <th className="px-2 py-1.5 text-right font-medium">Achv.</th>
+                  {P && <th className="pl-2 py-1.5 text-right font-medium">{priorCol}</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {D.activationByType.map((a, i) => {
+                  const prior = P?.activationByType[i]?.actual;
+                  return (
+                    <tr key={a.type} className="border-t border-gray-100 dark:border-gray-800/60">
+                      <td className="py-1.5 pr-2 font-medium text-gray-900 dark:text-gray-100">{a.type}</td>
+                      <td className="px-2 py-1.5 text-right text-gray-500 dark:text-gray-400">{fmtNum(a.target)}</td>
+                      <td className="px-2 py-1.5 text-right font-semibold text-gray-900 dark:text-gray-100">{fmtNum(a.actual)}</td>
+                      <td className="px-2 py-1.5 text-right">{a.target ? Math.round((a.actual / a.target) * 100) : 0}%</td>
+                      {P && <td className="pl-2 py-1.5 text-right text-gray-500 dark:text-gray-400">{prior != null ? fmtNum(prior) : "—"}</td>}
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-gray-200 font-semibold dark:border-gray-700">
+                  <td className="py-1.5 pr-2">Total</td>
+                  <td className="px-2 py-1.5 text-right">{fmtNum(D.activationByType.reduce((s, a) => s + a.target, 0))}</td>
+                  <td className="px-2 py-1.5 text-right">{fmtNum(D.activationByType.reduce((s, a) => s + a.actual, 0))}</td>
+                  <td className="px-2 py-1.5 text-right" />
+                  {P && <td className="pl-2 py-1.5 text-right">{fmtNum(P.activationByType.reduce((s, a) => s + a.actual, 0))}</td>}
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+
+        {open === "net" && (
+          <div>
+            <DRow label="Gross activations">{fmtNum(D.totalActivations)}</DRow>
+            <DRow label="Terminations">{fmtNum(D.totalTerminations)}</DRow>
+            <DRow label="Net activations">{fmtNum(D.netActivations)}</DRow>
+            <DRow label="Termination rate">
+              {((D.totalTerminations / D.totalActivations) * 100).toFixed(1)}%
+            </DRow>
+            <p className="mb-1.5 mt-4 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              Monthly trend
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                    <th className="py-1.5 pr-2 text-left font-medium">Period</th>
+                    <th className="px-2 py-1.5 text-right font-medium">Activations</th>
+                    <th className="px-2 py-1.5 text-right font-medium">Terminations</th>
+                    <th className="pl-2 py-1.5 text-right font-medium">Net</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {D.netActivationsTrend.map((m) => (
+                    <tr key={m.period} className="border-t border-gray-100 dark:border-gray-800/60">
+                      <td className="py-1.5 pr-2 font-medium text-gray-900 dark:text-gray-100">{m.period}</td>
+                      <td className="px-2 py-1.5 text-right text-emerald-600 dark:text-emerald-400">{fmtNum(m.activations)}</td>
+                      <td className="px-2 py-1.5 text-right text-red-600 dark:text-red-400">{fmtNum(m.terminations)}</td>
+                      <td className="pl-2 py-1.5 text-right font-semibold">{fmtNum(m.activations - m.terminations)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {open === "inactive" && (
+          <div>
+            <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">
+              <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(D.inactiveCRs)}</span> CRs with
+              no recorded activation in 24+ months. Sample of {D.inactiveCRList.length} below — full list on the
+              Performance tab.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                    <th className="py-1.5 pr-2 text-left font-medium">Company</th>
+                    <th className="px-2 py-1.5 text-left font-medium">Partner</th>
+                    <th className="px-2 py-1.5 text-left font-medium">Last activation</th>
+                    <th className="pl-2 py-1.5 text-right font-medium">Dormant</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {D.inactiveCRList.map((c) => (
+                    <tr key={c.cr} className="border-t border-gray-100 dark:border-gray-800/60">
+                      <td className="py-1.5 pr-2 font-medium text-gray-900 dark:text-gray-100">{c.name}</td>
+                      <td className="px-2 py-1.5 text-gray-500 dark:text-gray-400">{c.partner}</td>
+                      <td className="px-2 py-1.5 text-gray-500 dark:text-gray-400">{fmtDate(c.lastActivation)}</td>
+                      <td className="pl-2 py-1.5 text-right font-medium text-red-600 dark:text-red-400">{c.monthsInactive} mo</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 interface Props {
   period: string;
   quarter: string;
@@ -538,6 +749,9 @@ export function IndirectCommissionDashboard({
   const [planFilter, setPlanFilter] = React.useState("All Plans");
 
   const isMobile = useIsMobile();
+
+  // Stat-tile detail dialog
+  const [detail, setDetail] = React.useState<"revenue" | "activations" | "net" | "inactive" | null>(null);
 
   // Performance Overview view + per-table search
   const [overviewView, setOverviewView] = React.useState<"charts" | "table">("charts");
@@ -777,6 +991,7 @@ export function IndirectCommissionDashboard({
               target={revenueTarget}
               prevActual={P?.revenueActual}
               prevAchievement={P?.revenueAchievement}
+              onClick={() => setDetail("revenue")}
             />
             <StatTile
               label="Activations — Actual vs Target"
@@ -790,6 +1005,7 @@ export function IndirectCommissionDashboard({
                   ? { current: totalActual, prev: P.activationByType.reduce((s, a) => s + a.actual, 0) }
                   : undefined
               }
+              onClick={() => setDetail("activations")}
             />
             <StatTile
               label="Net Activations"
@@ -799,17 +1015,31 @@ export function IndirectCommissionDashboard({
               progress={(netActivations / totalActivations) * 100}
               progressLabel="activation retention"
               delta={P ? { current: netActivations, prev: P.netActivations } : undefined}
+              onClick={() => setDetail("net")}
             />
             <StatTile
               label="Inactive CRs (2 yrs)"
               value={fmtNum(inactiveCRs)}
               tone="bad"
-              sub="No activations in 24 months — list below"
+              sub="No activations in 24 months — tap for the list"
               progress={(inactiveCRs / crBase) * 100}
               progressLabel={`of ${fmtNum(crBase)} CRs`}
               delta={P ? { current: inactiveCRs, prev: P.inactiveCRs, fmt: (n) => fmtNum(Math.abs(Math.round(n))), invert: true } : undefined}
+              onClick={() => setDetail("inactive")}
             />
           </div>
+
+          <StatDetailDialog
+            open={detail}
+            onClose={() => setDetail(null)}
+            D={D}
+            P={P}
+            cmpLabel={cmpLabel}
+            quarter={quarter}
+            year={year}
+            comparisonQuarter={comparisonQuarter}
+            comparisonYear={comparisonYear}
+          />
 
           {/* Performance Overview — Charts (gauges) / Table (by CR) */}
           {(() => {
