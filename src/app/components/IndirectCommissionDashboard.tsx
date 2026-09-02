@@ -943,17 +943,17 @@ export function IndirectCommissionDashboard({
                     </span>
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="mx-auto w-full max-w-[300px] space-y-2 sm:mx-0">
                   {revContrib.map((r) => (
-                    <div key={r.name} className="flex items-center justify-between text-sm">
+                    <div key={r.name} className="flex items-center justify-between gap-3 text-sm">
                       <span className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full" style={{ background: r.color }} />
                         <span className="text-gray-700 dark:text-gray-300">{r.name}</span>
                       </span>
                       <span className="flex flex-col items-end">
-                        <span>
+                        <span className="whitespace-nowrap">
                           <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtOMR(r.value)}</span>
-                          <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{r.pct.toFixed(1)}%</span>
+                          <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">{r.pct.toFixed(1)}%</span>
                         </span>
                         {typeof r.prevValue === "number" && (
                           <Delta current={r.value} prev={r.prevValue} fmt={(n) => fmtOMR(Math.abs(n))} />
