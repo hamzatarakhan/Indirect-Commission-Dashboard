@@ -642,6 +642,24 @@ export function IndirectCommissionDashboard({
     priorTerminations: P?.netActivationsTrend[i]?.terminations,
   }));
   const priorTotalActivations = P?.activationByType.reduce((s, a) => s + a.actual, 0) ?? 0;
+
+  // % change vs prior, drawn above the "Actual" bar so this chart carries the
+  // same delta cue as the tables/tiles.
+  const renderTypeDelta = (props: any) => {
+    const { x, y, width, index } = props;
+    const row = activationByTypeData[index];
+    if (!row || row.prior == null) return null;
+    const diff = row.actual - row.prior;
+    const pct = row.prior ? (diff / row.prior) * 100 : 0;
+    const flat = Math.abs(pct) < 0.5;
+    const color = flat ? "#9ca3af" : diff > 0 ? "#059669" : "#dc2626";
+    const arrow = flat ? "→" : diff > 0 ? "▲" : "▼";
+    return (
+      <text x={x + width / 2} y={y - 15} textAnchor="middle" fill={color} fontSize={10} fontWeight={600}>
+        {arrow} {pct >= 0 ? "+" : ""}{pct.toFixed(0)}%
+      </text>
+    );
+  };
   const planCmpData = D.planRows.map((r) => {
     const pr = P?.planRows.find((x) => x.plan === r.plan);
     return { ...r, priorAch: pr?.achievement, priorPct: pr?.commissionPct };
@@ -889,8 +907,8 @@ export function IndirectCommissionDashboard({
                 )
               }
             >
-              <ResponsiveContainer width="100%" height={comparisonMode ? 300 : 280}>
-                <BarChart data={activationByTypeData} margin={{ top: 20 }}>
+              <ResponsiveContainer width="100%" height={comparisonMode ? 310 : 280}>
+                <BarChart data={activationByTypeData} margin={{ top: comparisonMode ? 34 : 20 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                   <XAxis dataKey="type" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
@@ -908,6 +926,7 @@ export function IndirectCommissionDashboard({
                   )}
                   <Bar dataKey="actual" name="Actual" fill="#3b82f6" radius={[4, 4, 0, 0]}>
                     <LabelList dataKey="actual" position="top" formatter={fmtShort} className="fill-gray-900 dark:fill-gray-100 text-[11px] font-semibold" />
+                    {comparisonMode && <LabelList dataKey="actual" content={renderTypeDelta} />}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
