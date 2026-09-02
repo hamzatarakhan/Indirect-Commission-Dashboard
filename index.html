@@ -13,10 +13,30 @@
     </head>
 
     <body>
-      
+
       <div id="root"></div>
       <script type="module" src="/src/main.tsx"></script>
-      
+      <script>
+        // GitHub Pages caches index.html (~10 min). If a newer build is live,
+        // jump to it once so the shared link always shows the latest.
+        setTimeout(function () {
+          try {
+            if (sessionStorage.getItem('__cb_done')) return;
+            fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' })
+              .then(function (r) { return r.text(); })
+              .then(function (html) {
+                var m = html.match(/assets\/index-[A-Za-z0-9_-]+\.js/);
+                var loaded = Array.prototype.map.call(document.scripts, function (s) { return s.src; }).join(' ');
+                if (m && loaded.indexOf(m[0]) === -1) {
+                  sessionStorage.setItem('__cb_done', '1');
+                  location.replace(location.pathname + '?_cb=' + Date.now());
+                }
+              })
+              .catch(function () {});
+          } catch (e) {}
+        }, 1200);
+      </script>
+
     </body>
   </html>
   
