@@ -143,7 +143,7 @@ function StatTile({
         ? "bg-amber-500"
         : "bg-blue-500";
   return (
-    <div className="relative flex w-full flex-col overflow-hidden rounded-xl border border-[#E2E8F0] bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-[#E2E8F0]/20 dark:bg-[#07112F]">
+    <div className="relative flex w-full flex-col overflow-hidden rounded-xl border border-[#E2E8F0] bg-white dark:border-[#E2E8F0]/20 dark:bg-[#07112F]">
       <span className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-blue-400 dark:bg-blue-500" />
       <div className="flex-1 p-4">
         <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
@@ -232,7 +232,7 @@ function GaugeTile({
   const hasPrev = typeof prevActual === "number";
   const pp = typeof prevAchievement === "number" ? Math.max(0, Math.min(100, prevAchievement)) : null;
   return (
-    <div className="relative flex flex-col overflow-hidden rounded-xl border border-[#E2E8F0] bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-[#E2E8F0]/20 dark:bg-[#07112F]">
+    <div className="relative flex flex-col overflow-hidden rounded-xl border border-[#E2E8F0] bg-white dark:border-[#E2E8F0]/20 dark:bg-[#07112F]">
       <span className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-blue-400 dark:bg-blue-500" />
       <div className="flex-1 p-4">
         <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
