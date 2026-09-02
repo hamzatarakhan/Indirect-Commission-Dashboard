@@ -607,7 +607,9 @@ export function IndirectCommissionDashboard({
   const netActivationsData = D.netActivationsTrend.map((m, i) => ({
     ...m,
     priorActivations: P?.netActivationsTrend[i]?.activations,
+    priorTerminations: P?.netActivationsTrend[i]?.terminations,
   }));
+  const priorTotalActivations = P?.activationByType.reduce((s, a) => s + a.actual, 0) ?? 0;
   const planCmpData = D.planRows.map((r) => {
     const pr = P?.planRows.find((x) => x.plan === r.plan);
     return { ...r, priorAch: pr?.achievement, priorPct: pr?.commissionPct };
@@ -801,8 +803,23 @@ export function IndirectCommissionDashboard({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Performance by Activation type */}
-            <SectionCard icon={<Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />} title="Performance by Activation Type">
-              <ResponsiveContainer width="100%" height={280}>
+            <SectionCard
+              icon={<Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+              title="Performance by Activation Type"
+              action={
+                P && (
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <span>Total activations · {cmpLabel}</span>
+                    <Delta
+                      current={totalActual}
+                      prev={priorTotalActivations}
+                      fmt={(n) => fmtNum(Math.abs(Math.round(n)))}
+                    />
+                  </div>
+                )
+              }
+            >
+              <ResponsiveContainer width="100%" height={comparisonMode ? 300 : 280}>
                 <BarChart data={activationByTypeData} margin={{ top: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                   <XAxis dataKey="type" tick={{ fontSize: 12 }} />
@@ -815,12 +832,12 @@ export function IndirectCommissionDashboard({
                     )}
                   </Bar>
                   {comparisonMode && (
-                    <Bar dataKey="prior" name={`Prior (${comparisonQuarter} ${comparisonYear})`} fill="#a5b4fc" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="prior" name={`Prior (${comparisonQuarter} ${comparisonYear})`} fill="#a5b4fc" radius={[4, 4, 0, 0]}>
+                      <LabelList dataKey="prior" position="top" formatter={fmtShort} className="fill-indigo-400 text-[10px]" />
+                    </Bar>
                   )}
                   <Bar dataKey="actual" name="Actual" fill="#3b82f6" radius={[4, 4, 0, 0]}>
-                    {!comparisonMode && (
-                      <LabelList dataKey="actual" position="top" formatter={fmtShort} className="fill-gray-900 dark:fill-gray-100 text-[11px] font-semibold" />
-                    )}
+                    <LabelList dataKey="actual" position="top" formatter={fmtShort} className="fill-gray-900 dark:fill-gray-100 text-[11px] font-semibold" />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -1053,8 +1070,29 @@ export function IndirectCommissionDashboard({
 
           {/* Net Activations & Terminations Analysis */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SectionCard icon={<Repeat className="w-5 h-5 text-blue-600 dark:text-blue-400" />} title="Net Activations (Activations vs Terminations)">
-              <ResponsiveContainer width="100%" height={280}>
+            <SectionCard
+              icon={<Repeat className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+              title="Net Activations (Activations vs Terminations)"
+              action={
+                P && (
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                    <span className="inline-flex items-center gap-1">
+                      Activations
+                      <Delta current={totalActivations} prev={P.totalActivations} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} />
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      Terminations
+                      <Delta current={totalTerminations} prev={P.totalTerminations} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} invert />
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      Net
+                      <Delta current={netActivations} prev={P.netActivations} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} />
+                    </span>
+                  </div>
+                )
+              }
+            >
+              <ResponsiveContainer width="100%" height={comparisonMode ? 300 : 280}>
                 <BarChart data={netActivationsData} margin={{ top: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                   <XAxis dataKey="period" tick={{ fontSize: 12 }} />
@@ -1062,13 +1100,16 @@ export function IndirectCommissionDashboard({
                   <RTooltip formatter={(v: number) => fmtNum(v)} />
                   <Legend />
                   {comparisonMode && (
-                    <Bar dataKey="priorActivations" name="Prior activations" fill="#6ee7b7" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="priorActivations" name={`Prior activations (${comparisonQuarter} ${comparisonYear})`} fill="#6ee7b7" radius={[4, 4, 0, 0]} />
                   )}
                   <Bar dataKey="activations" name="Activations" fill="#10b981" radius={[4, 4, 0, 0]}>
                     {!comparisonMode && (
                       <LabelList dataKey="activations" position="top" formatter={fmtShort} className="fill-gray-900 dark:fill-gray-100 text-[11px] font-semibold" />
                     )}
                   </Bar>
+                  {comparisonMode && (
+                    <Bar dataKey="priorTerminations" name={`Prior terminations (${comparisonQuarter} ${comparisonYear})`} fill="#fca5a5" radius={[4, 4, 0, 0]} />
+                  )}
                   <Bar dataKey="terminations" name="Terminations" fill="#ef4444" radius={[4, 4, 0, 0]}>
                     {!comparisonMode && (
                       <LabelList dataKey="terminations" position="top" formatter={fmtShort} className="fill-gray-500 text-[11px]" />
