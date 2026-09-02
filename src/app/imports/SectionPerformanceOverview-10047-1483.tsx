@@ -1,0 +1,980 @@
+import svgPaths from "./svg-gez86xwt4g";
+
+function Title() {
+  return (
+    <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-full" data-name="Title">
+      <p className="font-['Font_Awesome_6_Pro:Solid',sans-serif] leading-[normal] not-italic relative shrink-0 text-[20px] text-nowrap text-orange-500 whitespace-pre"></p>
+      <div className="basis-0 flex flex-col font-['Roboto:Medium',sans-serif] font-medium grow justify-center leading-[0] min-h-px min-w-px relative shrink-0 text-[#000b25] text-[17px]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2]" dir="auto">
+          Performance Overview
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Frame13() {
+  return (
+    <div className="content-stretch flex gap-[10px] items-center justify-center relative shrink-0 w-full">
+      <div className="flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(0,11,37,0.64)] text-nowrap" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          Year
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Chart() {
+  return (
+    <div className="h-[177px] relative shrink-0 w-[354px]" data-name="Chart 10">
+      <div className="absolute bottom-0 left-[-8.47%] right-[-8.47%] top-[-16.95%]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 414 207">
+          <g id="Chart 10">
+            <path d={svgPaths.p1978be80} id="Ellipse 52" stroke="url(#paint0_linear_10047_1492)" strokeWidth="60" />
+            <path d={svgPaths.p2581f440} id="Ellipse 53" stroke="url(#paint1_linear_10047_1492)" strokeWidth="60" />
+            <path d="M310 103L353 60" id="Vector 43" stroke="var(--stroke-0, white)" strokeWidth="5" />
+          </g>
+          <defs>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_10047_1492" x1="207" x2="207" y1="30" y2="207">
+              <stop stopColor="#FFD572" />
+              <stop offset="1" stopColor="#FEBD38" />
+            </linearGradient>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint1_linear_10047_1492" x1="181" x2="181" y1="30" y2="207">
+              <stop stopColor="#FF9364" />
+              <stop offset="1" stopColor="#F25F33" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Frame33() {
+  return (
+    <div className="absolute bg-[rgba(0,191,179,0.05)] box-border content-stretch flex gap-[10px] items-center justify-center left-[207px] p-[10px] rounded-[51px] top-[135.89px]">
+      <div className="bg-clip-text bg-gradient-to-b flex flex-col font-['Poppins:SemiBold',sans-serif] from-[#00b0b2] justify-center leading-[0] not-italic relative shrink-0 text-[36.342px] text-center text-nowrap to-[rgba(4,99,100,0.88)] tracking-[-0.3634px]" style={{ WebkitTextFillColor: "transparent" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          70%
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Frame21() {
+  return (
+    <div className="content-stretch flex flex-col gap-[44px] items-center relative shrink-0 w-full">
+      <Frame13 />
+      <Chart />
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[233px] text-[#000b25] text-[19px] text-nowrap top-[229.39px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          84M
+        </p>
+      </div>
+      <Frame33 />
+    </div>
+  );
+}
+
+function Frame20() {
+  return (
+    <div className="content-stretch flex gap-[10px] h-[19px] items-center justify-center relative shrink-0 w-full">
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[59px] text-[16px] text-[rgba(0,11,37,0.64)] text-nowrap top-[9.5px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          0.00
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Content() {
+  return (
+    <div className="bg-[rgba(38,101,237,0.03)] box-border content-stretch flex flex-col gap-[7px] items-center justify-center px-[12px] py-[16px] relative rounded-[8px] shrink-0 w-[528px]" data-name="Content">
+      <div aria-hidden="true" className="absolute border border-[rgba(38,101,237,0.1)] border-solid inset-0 pointer-events-none rounded-[8px]" />
+      <Frame21 />
+      <Frame20 />
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[422px] text-[16px] text-[rgba(0,11,37,0.64)] text-nowrap top-[272.95px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          94M
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Frame26() {
+  return (
+    <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0">
+      <Content />
+    </div>
+  );
+}
+
+function Frame14() {
+  return (
+    <div className="content-stretch flex gap-[6.668px] items-center justify-center relative shrink-0 w-full">
+      <div className="flex flex-col font-['Roboto:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(0,11,37,0.64)] text-nowrap" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          Quarter 1
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Chart1() {
+  return (
+    <div className="h-[118.02px] relative shrink-0 w-[236.041px]" data-name="Chart 10">
+      <div className="absolute bottom-0 left-[-8.48%] right-[-8.47%] top-[-16.95%]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 277 139">
+          <g id="Chart 10">
+            <path d={svgPaths.p3a429a80} id="Ellipse 52" stroke="url(#paint0_linear_10047_1487)" strokeWidth="40.0069" />
+            <path d={svgPaths.p381947c0} id="Ellipse 53" stroke="url(#paint1_linear_10047_1487)" strokeWidth="40.0069" />
+            <path d={svgPaths.p2dc0a3c0} id="Vector 43" stroke="var(--stroke-0, white)" strokeWidth="3.33391" />
+          </g>
+          <defs>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_10047_1487" x1="138.024" x2="138.024" y1="20.0035" y2="138.024">
+              <stop stopColor="#FFD572" />
+              <stop offset="1" stopColor="#FEBD38" />
+            </linearGradient>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint1_linear_10047_1487" x1="120.688" x2="120.688" y1="20.0035" y2="138.024">
+              <stop stopColor="#FF9364" />
+              <stop offset="1" stopColor="#F25F33" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Frame34() {
+  return (
+    <div className="absolute bg-[rgba(0,191,179,0.05)] box-border content-stretch flex gap-[5px] items-center justify-center left-[148px] p-[5px] rounded-[25.5px] top-[107.33px]">
+      <div className="bg-clip-text bg-gradient-to-b flex flex-col font-['Poppins:SemiBold',sans-serif] from-[#00b0b2] justify-center leading-[0] not-italic relative shrink-0 text-[18.171px] text-center text-nowrap to-[rgba(4,99,100,0.88)] tracking-[-0.1817px]" style={{ WebkitTextFillColor: "transparent" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          70%
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Frame23() {
+  return (
+    <div className="content-stretch flex flex-col gap-[29.338px] items-center relative shrink-0 w-full">
+      <Frame14 />
+      <Chart1 />
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[156px] text-[#000b25] text-[18px] text-nowrap top-[158px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          84M
+        </p>
+      </div>
+      <Frame34 />
+    </div>
+  );
+}
+
+function Frame28() {
+  return (
+    <div className="content-stretch flex gap-[6.668px] h-[12.669px] items-center justify-center relative shrink-0 w-full">
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[36px] text-[14px] text-[rgba(0,11,37,0.64)] text-nowrap top-[6.5px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          0.00
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Content1() {
+  return (
+    <div className="bg-[rgba(38,101,237,0.03)] relative rounded-[5.334px] shrink-0 w-full" data-name="Content">
+      <div aria-hidden="true" className="absolute border-[0.667px] border-[rgba(38,101,237,0.1)] border-solid inset-0 pointer-events-none rounded-[5.334px]" />
+      <div className="flex flex-col items-center justify-center size-full">
+        <div className="box-border content-stretch flex flex-col gap-[4.667px] items-center justify-center px-[8.001px] py-[10.669px] relative w-full">
+          <Frame23 />
+          <Frame28 />
+          <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[285px] text-[14px] text-[rgba(0,11,37,0.64)] text-nowrap top-[188.49px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+            <p className="leading-[1.2] whitespace-pre" dir="auto">
+              94M
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Frame15() {
+  return (
+    <div className="content-stretch flex gap-[6.668px] items-center justify-center relative shrink-0 w-full">
+      <div className="flex flex-col font-['Roboto:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(0,11,37,0.64)] text-nowrap" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          Quarter 3
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Chart2() {
+  return (
+    <div className="h-[118.02px] relative shrink-0 w-[236.041px]" data-name="Chart 10">
+      <div className="absolute bottom-0 left-[-8.48%] right-[-8.47%] top-[-16.95%]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 277 139">
+          <g id="Chart 10">
+            <path d={svgPaths.p3a429a80} id="Ellipse 52" stroke="url(#paint0_linear_10047_1487)" strokeWidth="40.0069" />
+            <path d={svgPaths.p381947c0} id="Ellipse 53" stroke="url(#paint1_linear_10047_1487)" strokeWidth="40.0069" />
+            <path d={svgPaths.p2dc0a3c0} id="Vector 43" stroke="var(--stroke-0, white)" strokeWidth="3.33391" />
+          </g>
+          <defs>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_10047_1487" x1="138.024" x2="138.024" y1="20.0035" y2="138.024">
+              <stop stopColor="#FFD572" />
+              <stop offset="1" stopColor="#FEBD38" />
+            </linearGradient>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint1_linear_10047_1487" x1="120.688" x2="120.688" y1="20.0035" y2="138.024">
+              <stop stopColor="#FF9364" />
+              <stop offset="1" stopColor="#F25F33" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Frame35() {
+  return (
+    <div className="absolute bg-[rgba(0,191,179,0.05)] box-border content-stretch flex gap-[5px] items-center justify-center left-[148px] p-[5px] rounded-[25.5px] top-[107.33px]">
+      <div className="bg-clip-text bg-gradient-to-b flex flex-col font-['Poppins:SemiBold',sans-serif] from-[#00b0b2] justify-center leading-[0] not-italic relative shrink-0 text-[18.171px] text-center text-nowrap to-[rgba(4,99,100,0.88)] tracking-[-0.1817px]" style={{ WebkitTextFillColor: "transparent" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          70%
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Frame29() {
+  return (
+    <div className="content-stretch flex flex-col gap-[29.338px] items-center relative shrink-0 w-full">
+      <Frame15 />
+      <Chart2 />
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[156px] text-[#000b25] text-[18px] text-nowrap top-[158px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          84M
+        </p>
+      </div>
+      <Frame35 />
+    </div>
+  );
+}
+
+function Frame30() {
+  return (
+    <div className="content-stretch flex gap-[6.668px] h-[12.669px] items-center justify-center relative shrink-0 w-full">
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[36px] text-[14px] text-[rgba(0,11,37,0.64)] text-nowrap top-[6.5px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          0.00
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Content2() {
+  return (
+    <div className="bg-[rgba(38,101,237,0.03)] relative rounded-[5.334px] shrink-0 w-full" data-name="Content">
+      <div aria-hidden="true" className="absolute border-[0.667px] border-[rgba(38,101,237,0.1)] border-solid inset-0 pointer-events-none rounded-[5.334px]" />
+      <div className="flex flex-col items-center justify-center size-full">
+        <div className="box-border content-stretch flex flex-col gap-[4.667px] items-center justify-center px-[8.001px] py-[10.669px] relative w-full">
+          <Frame29 />
+          <Frame30 />
+          <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[285px] text-[14px] text-[rgba(0,11,37,0.64)] text-nowrap top-[188.49px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+            <p className="leading-[1.2] whitespace-pre" dir="auto">
+              94M
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Frame24() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[16px] grow items-start min-h-px min-w-px relative shrink-0">
+      <Content1 />
+      <Content2 />
+    </div>
+  );
+}
+
+function Frame16() {
+  return (
+    <div className="content-stretch flex gap-[6.668px] items-center justify-center relative shrink-0 w-full">
+      <div className="flex flex-col font-['Roboto:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(0,11,37,0.64)] text-nowrap" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          Quarter 2
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Chart3() {
+  return (
+    <div className="h-[118.02px] relative shrink-0 w-[236.041px]" data-name="Chart 10">
+      <div className="absolute bottom-0 left-[-8.48%] right-[-8.47%] top-[-16.95%]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 277 139">
+          <g id="Chart 10">
+            <path d={svgPaths.p3a429a80} id="Ellipse 52" stroke="url(#paint0_linear_10047_1487)" strokeWidth="40.0069" />
+            <path d={svgPaths.p381947c0} id="Ellipse 53" stroke="url(#paint1_linear_10047_1487)" strokeWidth="40.0069" />
+            <path d={svgPaths.p2dc0a3c0} id="Vector 43" stroke="var(--stroke-0, white)" strokeWidth="3.33391" />
+          </g>
+          <defs>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_10047_1487" x1="138.024" x2="138.024" y1="20.0035" y2="138.024">
+              <stop stopColor="#FFD572" />
+              <stop offset="1" stopColor="#FEBD38" />
+            </linearGradient>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint1_linear_10047_1487" x1="120.688" x2="120.688" y1="20.0035" y2="138.024">
+              <stop stopColor="#FF9364" />
+              <stop offset="1" stopColor="#F25F33" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Frame36() {
+  return (
+    <div className="absolute bg-[rgba(0,191,179,0.05)] box-border content-stretch flex gap-[5px] items-center justify-center left-[148px] p-[5px] rounded-[25.5px] top-[107.33px]">
+      <div className="bg-clip-text bg-gradient-to-b flex flex-col font-['Poppins:SemiBold',sans-serif] from-[#00b0b2] justify-center leading-[0] not-italic relative shrink-0 text-[18.171px] text-center text-nowrap to-[rgba(4,99,100,0.88)] tracking-[-0.1817px]" style={{ WebkitTextFillColor: "transparent" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          70%
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Frame31() {
+  return (
+    <div className="content-stretch flex flex-col gap-[29.338px] items-center relative shrink-0 w-full">
+      <Frame16 />
+      <Chart3 />
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[156px] text-[#000b25] text-[18px] text-nowrap top-[158px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          84M
+        </p>
+      </div>
+      <Frame36 />
+    </div>
+  );
+}
+
+function Frame32() {
+  return (
+    <div className="content-stretch flex gap-[6.668px] h-[12.669px] items-center justify-center relative shrink-0 w-full">
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[36px] text-[14px] text-[rgba(0,11,37,0.64)] text-nowrap top-[6.5px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          0.00
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Content3() {
+  return (
+    <div className="bg-[rgba(38,101,237,0.03)] relative rounded-[5.334px] shrink-0 w-full" data-name="Content">
+      <div aria-hidden="true" className="absolute border-[0.667px] border-[rgba(38,101,237,0.1)] border-solid inset-0 pointer-events-none rounded-[5.334px]" />
+      <div className="flex flex-col items-center justify-center size-full">
+        <div className="box-border content-stretch flex flex-col gap-[4.667px] items-center justify-center px-[8.001px] py-[10.669px] relative w-full">
+          <Frame31 />
+          <Frame32 />
+          <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[285px] text-[14px] text-[rgba(0,11,37,0.64)] text-nowrap top-[188.49px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+            <p className="leading-[1.2] whitespace-pre" dir="auto">
+              94M
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Frame17() {
+  return (
+    <div className="content-stretch flex gap-[6.668px] items-center justify-center relative shrink-0 w-full">
+      <div className="flex flex-col font-['Roboto:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(0,11,37,0.64)] text-nowrap" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          Quarter 4
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Chart4() {
+  return (
+    <div className="h-[118.02px] relative shrink-0 w-[236.041px]" data-name="Chart 10">
+      <div className="absolute bottom-0 left-[-8.48%] right-[-8.47%] top-[-16.95%]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 277 139">
+          <g id="Chart 10">
+            <path d={svgPaths.p3a429a80} id="Ellipse 52" stroke="url(#paint0_linear_10047_1487)" strokeWidth="40.0069" />
+            <path d={svgPaths.p381947c0} id="Ellipse 53" stroke="url(#paint1_linear_10047_1487)" strokeWidth="40.0069" />
+            <path d={svgPaths.p2dc0a3c0} id="Vector 43" stroke="var(--stroke-0, white)" strokeWidth="3.33391" />
+          </g>
+          <defs>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_10047_1487" x1="138.024" x2="138.024" y1="20.0035" y2="138.024">
+              <stop stopColor="#FFD572" />
+              <stop offset="1" stopColor="#FEBD38" />
+            </linearGradient>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint1_linear_10047_1487" x1="120.688" x2="120.688" y1="20.0035" y2="138.024">
+              <stop stopColor="#FF9364" />
+              <stop offset="1" stopColor="#F25F33" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Frame37() {
+  return (
+    <div className="absolute bg-[rgba(0,191,179,0.05)] box-border content-stretch flex gap-[5px] items-center justify-center left-[148px] p-[5px] rounded-[25.5px] top-[107.33px]">
+      <div className="bg-clip-text bg-gradient-to-b flex flex-col font-['Poppins:SemiBold',sans-serif] from-[#00b0b2] justify-center leading-[0] not-italic relative shrink-0 text-[18.171px] text-center text-nowrap to-[rgba(4,99,100,0.88)] tracking-[-0.1817px]" style={{ WebkitTextFillColor: "transparent" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          70%
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Frame38() {
+  return (
+    <div className="content-stretch flex flex-col gap-[29.338px] items-center relative shrink-0 w-full">
+      <Frame17 />
+      <Chart4 />
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[156px] text-[#000b25] text-[18px] text-nowrap top-[158px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          84M
+        </p>
+      </div>
+      <Frame37 />
+    </div>
+  );
+}
+
+function Frame39() {
+  return (
+    <div className="content-stretch flex gap-[6.668px] h-[12.669px] items-center justify-center relative shrink-0 w-full">
+      <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[36px] text-[14px] text-[rgba(0,11,37,0.64)] text-nowrap top-[6.5px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[1.2] whitespace-pre" dir="auto">
+          0.00
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Content4() {
+  return (
+    <div className="bg-[rgba(38,101,237,0.03)] relative rounded-[5.334px] shrink-0 w-full" data-name="Content">
+      <div aria-hidden="true" className="absolute border-[0.667px] border-[rgba(38,101,237,0.1)] border-solid inset-0 pointer-events-none rounded-[5.334px]" />
+      <div className="flex flex-col items-center justify-center size-full">
+        <div className="box-border content-stretch flex flex-col gap-[4.667px] items-center justify-center px-[8.001px] py-[10.669px] relative w-full">
+          <Frame38 />
+          <Frame39 />
+          <div className="absolute flex flex-col font-['Roboto:Medium',sans-serif] font-medium justify-center leading-[0] left-[285px] text-[14px] text-[rgba(0,11,37,0.64)] text-nowrap top-[188.49px] translate-y-[-50%]" style={{ fontVariationSettings: "'wdth' 100" }}>
+            <p className="leading-[1.2] whitespace-pre" dir="auto">
+              94M
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Frame25() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[16px] grow items-start min-h-px min-w-px relative shrink-0">
+      <Content3 />
+      <Content4 />
+    </div>
+  );
+}
+
+function Frame40() {
+  return (
+    <div className="content-stretch flex gap-[16px] items-center relative shrink-0 w-full">
+      <Frame24 />
+      <Frame25 />
+    </div>
+  );
+}
+
+function Frame27() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[16px] grow items-start min-h-px min-w-px relative shrink-0">
+      <Frame40 />
+    </div>
+  );
+}
+
+function Frame22() {
+  return (
+    <div className="content-stretch flex gap-[24px] items-center relative shrink-0 w-full">
+      <Frame26 />
+      <Frame27 />
+    </div>
+  );
+}
+
+function Frame1() {
+  return (
+    <div className="content-stretch flex gap-[10px] items-center justify-center relative shrink-0">
+      <p className="font-['Roboto:Medium',sans-serif] font-medium leading-[1.2] relative shrink-0 text-[#000b25] text-[14px] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        Monthly Performance
+      </p>
+    </div>
+  );
+}
+
+function Frame() {
+  return (
+    <div className="basis-0 box-border content-stretch flex gap-[8px] grow h-full items-center min-h-px min-w-px px-0 py-[8px] relative shrink-0">
+      <Frame1 />
+    </div>
+  );
+}
+
+function Icon() {
+  return (
+    <div className="box-border content-stretch flex flex-col items-center justify-center px-[8px] py-0 relative rounded-[4px] shrink-0 size-[20px]" data-name="Icon">
+      <div className="flex items-center justify-center relative shrink-0">
+        <div className="flex-none scale-y-[-100%]">
+          <p className="font-['Font_Awesome_6_Pro:Regular',sans-serif] leading-[normal] not-italic relative text-[17px] text-[rgba(0,11,37,0.64)] text-nowrap whitespace-pre">angle-down</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Frame18() {
+  return (
+    <div className="bg-slate-50 relative shrink-0 w-full">
+      <div className="flex flex-row items-center size-full">
+        <div className="box-border content-stretch flex gap-[8px] items-center pl-0 pr-[8px] py-0 relative w-full">
+          <div className="flex flex-row items-center self-stretch">
+            <div className="flex h-full items-center justify-center relative shrink-0 w-[calc(1px*((var(--transform-inner-height)*1)+(var(--transform-inner-width)*0)))]" style={{ "--transform-inner-width": "33", "--transform-inner-height": "32.796875" } as React.CSSProperties}>
+              <div className="flex-none h-full rotate-[90deg]">
+                <div className="h-full relative w-[33px]">
+                  <div className="absolute inset-[-1px_-3.03%]" style={{ "--stroke-0": "rgba(176, 211, 240, 1)" } as React.CSSProperties}>
+                    <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 35 2">
+                      <path d="M1 1H34" id="Line 1" stroke="var(--stroke-0, #B0D3F0)" strokeLinecap="round" strokeWidth="2" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="basis-0 flex flex-row grow items-center self-stretch shrink-0">
+            <Frame />
+          </div>
+          <Icon />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChartActions() {
+  return (
+    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        50M
+      </p>
+    </div>
+  );
+}
+
+function ChartActions1() {
+  return (
+    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        40M
+      </p>
+    </div>
+  );
+}
+
+function ChartActions2() {
+  return (
+    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        30M
+      </p>
+    </div>
+  );
+}
+
+function ChartActions3() {
+  return (
+    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        20M
+      </p>
+    </div>
+  );
+}
+
+function ChartActions4() {
+  return (
+    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        10M
+      </p>
+    </div>
+  );
+}
+
+function ChartActions5() {
+  return (
+    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        0
+      </p>
+    </div>
+  );
+}
+
+function LeftYAxis() {
+  return (
+    <div className="content-stretch flex flex-col items-center justify-between relative self-stretch shrink-0" data-name="Left Y Axis">
+      <ChartActions />
+      <ChartActions1 />
+      <ChartActions2 />
+      <ChartActions3 />
+      <ChartActions4 />
+      <ChartActions5 />
+    </div>
+  );
+}
+
+function HorizontalLines() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-start justify-between min-h-px min-w-px relative shrink-0 w-full" data-name="horizontal lines">
+      <div className="bg-slate-200 h-[0.64px] shrink-0 w-full" data-name="Line" />
+      <div className="bg-slate-200 h-[0.64px] shrink-0 w-full" data-name="Line" />
+      <div className="bg-slate-200 h-[0.64px] shrink-0 w-full" data-name="Line" />
+      <div className="bg-slate-200 h-[0.64px] shrink-0 w-full" data-name="Line" />
+      <div className="bg-slate-200 h-[0.64px] shrink-0 w-full" data-name="Line" />
+      <div className="bg-slate-200 h-[0.64px] shrink-0 w-full" data-name="Line" />
+    </div>
+  );
+}
+
+function Frame6() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[10px] grow items-start min-h-px min-w-px relative shrink-0">
+      <div className="bg-[#ff7800] h-[94.72px] rounded-tl-[4px] rounded-tr-[4px] shrink-0 w-full" data-name="Bar" />
+    </div>
+  );
+}
+
+function Frame5() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[10px] grow items-center min-h-px min-w-px relative shrink-0">
+      <div className="basis-0 bg-[#ff7800] grow h-[118px] min-h-px min-w-px rounded-tl-[4px] rounded-tr-[4px] shrink-0" data-name="Bar" />
+    </div>
+  );
+}
+
+function Frame4() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[10px] grow items-start min-h-px min-w-px relative shrink-0">
+      <div className="bg-[#ff7800] h-[54px] rounded-tl-[4px] rounded-tr-[4px] shrink-0 w-full" data-name="Bar" />
+    </div>
+  );
+}
+
+function Frame3() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[10px] grow items-center min-h-px min-w-px relative shrink-0">
+      <div className="basis-0 bg-[#ff7800] grow h-[141px] min-h-px min-w-px rounded-tl-[4px] rounded-tr-[4px] shrink-0" data-name="Bar" />
+    </div>
+  );
+}
+
+function Frame7() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[10px] grow items-start min-h-px min-w-px relative shrink-0">
+      <div className="bg-[#ff7800] h-[81px] rounded-tl-[4px] rounded-tr-[4px] shrink-0 w-full" data-name="Bar" />
+    </div>
+  );
+}
+
+function Frame8() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[10px] grow items-start min-h-px min-w-px relative shrink-0">
+      <div className="bg-[#ff7800] h-[42px] rounded-tl-[4px] rounded-tr-[4px] shrink-0 w-full" data-name="Bar" />
+    </div>
+  );
+}
+
+function Frame9() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[10px] grow items-center min-h-px min-w-px relative shrink-0">
+      <div className="basis-0 bg-[#ff7800] grow h-[150px] min-h-px min-w-px rounded-tl-[4px] rounded-tr-[4px] shrink-0" data-name="Bar" />
+    </div>
+  );
+}
+
+function Frame10() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[10px] grow items-center min-h-px min-w-px relative shrink-0">
+      <div className="basis-0 bg-[#ff7800] grow h-[165px] min-h-px min-w-px rounded-tl-[4px] rounded-tr-[4px] shrink-0" data-name="Bar" />
+    </div>
+  );
+}
+
+function Bars() {
+  return (
+    <div className="absolute bottom-[0.64px] box-border content-stretch flex gap-[24px] items-end left-0 overflow-clip px-[15.36px] py-0 right-[-0.8px] top-[0.64px]" data-name="Bars">
+      <Frame6 />
+      <Frame5 />
+      <Frame4 />
+      <Frame3 />
+      <Frame7 />
+      <Frame5 />
+      <Frame8 />
+      <Frame9 />
+      <Frame10 />
+      <Frame3 />
+    </div>
+  );
+}
+
+function ChartData() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[6.4px] grow h-full items-end justify-center min-h-px min-w-px relative shrink-0" data-name="Chart data">
+      <HorizontalLines />
+      <Bars />
+    </div>
+  );
+}
+
+function ChartVisualization() {
+  return (
+    <div className="basis-0 content-stretch flex grow h-full items-start min-h-px min-w-px relative shrink-0" data-name="Chart visualization">
+      <div className="bg-slate-200 h-full shrink-0 w-[0.64px]" data-name="Line" />
+      <ChartData />
+    </div>
+  );
+}
+
+function ChartVisualization1() {
+  return (
+    <div className="content-stretch flex h-[166.4px] items-start relative shrink-0 w-full" data-name="Chart visualization">
+      <div className="bg-slate-200 h-full shrink-0 w-[0.64px]" data-name="Line" />
+      <ChartVisualization />
+    </div>
+  );
+}
+
+function Content5() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[5.12px] grow items-center min-h-px min-w-px relative shrink-0" data-name="content">
+      <ChartVisualization1 />
+    </div>
+  );
+}
+
+function ChartElements() {
+  return (
+    <div className="content-stretch flex gap-[5.12px] items-start relative shrink-0 w-full" data-name="Chart elements">
+      <LeftYAxis />
+      <Content5 />
+    </div>
+  );
+}
+
+function LeftYAxis1() {
+  return <div className="h-[17px] shrink-0 w-[28px]" data-name="Left Y Axis" />;
+}
+
+function ChartActions6() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        Month 1
+      </p>
+    </div>
+  );
+}
+
+function ChartActions7() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>{`Month  2`}</p>
+    </div>
+  );
+}
+
+function ChartActions8() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        Month 3
+      </p>
+    </div>
+  );
+}
+
+function ChartActions9() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        Month 4
+      </p>
+    </div>
+  );
+}
+
+function ChartActions10() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        Month 5
+      </p>
+    </div>
+  );
+}
+
+function ChartActions11() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        Month 6
+      </p>
+    </div>
+  );
+}
+
+function ChartActions12() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        Month 7
+      </p>
+    </div>
+  );
+}
+
+function ChartActions13() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        Month 8
+      </p>
+    </div>
+  );
+}
+
+function ChartActions14() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        Month 9
+      </p>
+    </div>
+  );
+}
+
+function ChartActions15() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Chart actions">
+      <p className="font-['Roboto:Regular',sans-serif] font-normal leading-[1.2] relative shrink-0 text-[14px] text-[rgba(0,11,37,0.57)] text-nowrap whitespace-pre" style={{ fontVariationSettings: "'wdth' 100" }}>
+        Month 10
+      </p>
+    </div>
+  );
+}
+
+function LeftYAxis2() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[12px] grow items-start min-h-px min-w-px relative shrink-0" data-name="Left Y Axis">
+      <ChartActions6 />
+      <ChartActions7 />
+      <ChartActions8 />
+      <ChartActions9 />
+      <ChartActions10 />
+      <ChartActions11 />
+      <ChartActions12 />
+      <ChartActions13 />
+      <ChartActions14 />
+      <ChartActions15 />
+    </div>
+  );
+}
+
+function Frame11() {
+  return (
+    <div className="content-stretch flex gap-[20px] items-start relative shrink-0 w-full">
+      <LeftYAxis1 />
+      <LeftYAxis2 />
+    </div>
+  );
+}
+
+function Frame12() {
+  return (
+    <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full">
+      <ChartElements />
+      <Frame11 />
+    </div>
+  );
+}
+
+function Frame2() {
+  return (
+    <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full">
+      <Frame18 />
+      <Frame12 />
+    </div>
+  );
+}
+
+function Frame19() {
+  return (
+    <div className="content-stretch flex flex-col gap-[24px] items-start justify-center relative shrink-0 w-full">
+      <Title />
+      <Frame22 />
+      <Frame2 />
+    </div>
+  );
+}
+
+export default function SectionPerformanceOverview() {
+  return (
+    <div className="bg-white relative rounded-[8px] size-full" data-name="Section - Performance Overview">
+      <div aria-hidden="true" className="absolute border border-slate-200 border-solid inset-0 pointer-events-none rounded-[8px] shadow-[0px_3px_20px_0px_rgba(0,0,0,0.05)]" />
+      <div className="flex flex-col items-center justify-center size-full">
+        <div className="box-border content-stretch flex flex-col gap-[16px] items-center justify-center p-[16px] relative size-full">
+          <Frame19 />
+        </div>
+      </div>
+    </div>
+  );
+}
