@@ -215,17 +215,22 @@ function GaugeTile({
   actual,
   target,
   prevActual,
+  prevAchievement,
 }: {
   label: string;
   achievement: number;
   actual: number;
   target: number;
   prevActual?: number;
+  prevAchievement?: number;
 }) {
   const LEN = Math.PI * 40;
+  const INNER = Math.PI * 30;
   const p = Math.max(0, Math.min(100, achievement));
   const color =
     achievement >= 100 ? "#10b981" : achievement >= 90 ? "#f59e0b" : "#ef4444";
+  const hasPrev = typeof prevActual === "number";
+  const pp = typeof prevAchievement === "number" ? Math.max(0, Math.min(100, prevAchievement)) : null;
   return (
     <div className="relative flex flex-col overflow-hidden rounded-xl border border-[#E2E8F0] bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-[#E2E8F0]/20 dark:bg-[#07112F]">
       <span className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-blue-400 dark:bg-blue-500" />
@@ -244,15 +249,36 @@ function GaugeTile({
               strokeDashoffset={LEN * (1 - p / 100)}
               style={{ transition: "stroke-dashoffset .7s ease" }}
             />
+            {pp !== null && (
+              <>
+                <path d="M 20 50 A 30 30 0 0 1 80 50" fill="none" strokeWidth="6" strokeLinecap="round" className="stroke-gray-100 dark:stroke-white/10" />
+                <path
+                  d="M 20 50 A 30 30 0 0 1 80 50"
+                  fill="none"
+                  stroke="#a5b4fc"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray={INNER}
+                  strokeDashoffset={INNER * (1 - pp / 100)}
+                  style={{ transition: "stroke-dashoffset .7s ease" }}
+                />
+              </>
+            )}
           </svg>
           <div>
             <p className="text-2xl font-bold leading-none" style={{ color }}>
               {achievement}%
             </p>
             <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">achievement</p>
-            {typeof prevActual === "number" && (
+            {pp !== null && (
+              <p className="text-[11px] text-indigo-500 dark:text-indigo-300">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#a5b4fc] align-middle" />{" "}
+                prior {Math.round(prevAchievement as number)}%
+              </p>
+            )}
+            {hasPrev && (
               <div className="mt-1">
-                <Delta current={actual} prev={prevActual} fmt={(n) => fmtOMR(Math.abs(n))} />
+                <Delta current={actual} prev={prevActual as number} fmt={(n) => fmtOMR(Math.abs(n))} />
               </div>
             )}
           </div>
@@ -649,6 +675,7 @@ export function IndirectCommissionDashboard({
               actual={revenueActual}
               target={revenueTarget}
               prevActual={P?.revenueActual}
+              prevAchievement={P?.revenueAchievement}
             />
             <StatTile
               label="Activations — Actual vs Target"
