@@ -624,10 +624,12 @@ function StatBox({
           ? "text-amber-600 dark:text-amber-400"
           : "text-gray-900 dark:text-gray-100";
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-2.5 dark:border-gray-700/60 dark:bg-[#07112F]">
+    <div className="flex h-full flex-col rounded-lg border border-gray-200 bg-white p-2.5 dark:border-gray-700/60 dark:bg-[#07112F]">
       <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">{label}</p>
-      <p className={`mt-0.5 text-base font-bold ${cls}`}>{value}</p>
-      {sub && <p className="text-[10px] text-gray-400 dark:text-gray-500">{sub}</p>}
+      <p className={`mt-auto flex flex-wrap items-baseline gap-x-1.5 text-base font-bold leading-tight ${cls}`}>
+        <span>{value}</span>
+        {sub && <span className="text-[10px] font-normal text-gray-400 dark:text-gray-500">{sub}</span>}
+      </p>
     </div>
   );
 }
