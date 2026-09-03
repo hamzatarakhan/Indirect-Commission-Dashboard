@@ -1220,18 +1220,10 @@ export function IndirectCommissionDashboard({
             comparisonYear={comparisonYear}
           />
 
-          {/* Performance Overview — Charts (gauges) / Table (by CR) */}
+          {/* Performance Overview — Charts (gauges) / Table (by CR).
+              Toggle hidden for now; restore by rendering <SegTabs> into viewToggle. */}
           {(() => {
-            const viewToggle = (
-              <SegTabs
-                value={overviewView}
-                onChange={setOverviewView}
-                options={[
-                  { value: "charts", label: "Charts" },
-                  { value: "table", label: "Table" },
-                ]}
-              />
-            );
+            const viewToggle: React.ReactNode = null;
             return overviewView === "charts" ? (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <RevenueMatrix
