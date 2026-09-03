@@ -332,7 +332,8 @@ export function DashboardHeader({
               </SelectContent>
             </Select>
 
-            {/* Period Comparison Toggle */}
+            {/* Period Comparison Toggle — hidden for now; revert this `false &&` to restore */}
+            {false && (
             <Button
               onClick={() => setComparisonMode(!comparisonMode)}
               variant="outline"
@@ -346,6 +347,7 @@ export function DashboardHeader({
               <GitCompare className="w-4 h-4" />
               <span className="text-sm whitespace-nowrap">Compare</span>
             </Button>
+            )}
 
             {/* Comparison Period Selectors - Show when comparison mode is active */}
             {comparisonMode && (
