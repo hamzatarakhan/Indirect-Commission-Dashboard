@@ -1074,11 +1074,11 @@ export function RevenueMatrix({
 
           {/* Year and Quarterly Performance - Conditional Rendering */}
           {(activeTab === 'all' || activeTab === 'year' || activeTab === 'quarters') && (
-            <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 items-stretch w-full">
+            <div className="flex flex-col xl:flex-row gap-4 sm:gap-6 items-stretch w-full">
               {/* Year Performance - Left Side (Larger Primary KPI) */}
               {(activeTab === 'all' || activeTab === 'year') && (
-                <motion.div 
-                  className="bg-[#F8FAFC] dark:bg-[#07112F] relative rounded-xl border border-gray-200 dark:border-gray-700 hover:border-slate-300/70 dark:hover:border-slate-500/40 transition-all duration-300 w-full lg:w-[520px] lg:shrink-0"
+                <motion.div
+                  className="bg-[#F8FAFC] dark:bg-[#07112F] relative rounded-xl border border-gray-200 dark:border-gray-700 hover:border-slate-300/70 dark:hover:border-slate-500/40 transition-all duration-300 w-full xl:w-[480px] xl:shrink-0"
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
