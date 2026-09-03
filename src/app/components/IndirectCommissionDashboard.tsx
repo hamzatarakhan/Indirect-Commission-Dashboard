@@ -493,11 +493,13 @@ function SearchInput({
   onChange,
   placeholder,
   width = "w-full sm:w-56",
+  light = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
   width?: string;
+  light?: boolean;
 }) {
   return (
     <div className={`relative ${width}`}>
@@ -508,7 +510,9 @@ function SearchInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-8 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 dark:border-gray-700/60 dark:bg-white/[0.04] dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500/60 dark:focus:bg-white/[0.06] dark:focus:ring-blue-900/30"
+        className={`h-9 w-full rounded-lg border border-gray-200 pl-9 pr-8 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 dark:border-gray-700/60 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500/60 dark:focus:bg-white/[0.06] dark:focus:ring-blue-900/30 ${
+          light ? "bg-white dark:bg-[#07112F]" : "bg-gray-50 dark:bg-white/[0.04]"
+        }`}
       />
       {value && (
         <button
@@ -858,7 +862,7 @@ function StatDetailDialog({
               />
             </div>
             <div className="mb-2 mt-4">
-              <SearchInput value={q} onChange={setQ} placeholder="Search company / partner / CR" width="w-full" />
+              <SearchInput value={q} onChange={setQ} placeholder="Search company / partner / CR" width="w-full" light />
             </div>
             <DlgTable
               footer={<Pager {...inactivePage} onPage={inactivePage.setPage} />}
