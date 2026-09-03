@@ -1581,12 +1581,11 @@ export function IndirectCommissionDashboard({
                     <Th>Segment</Th>
                     <Th align="right">Activations</Th>
                     <Th align="right">Revenue</Th>
-                    <Th align="right">Avg / Activation</Th>
                   </HeadRow>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
                     {atRows.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
+                        <td colSpan={4} className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
                           No rows match “{atSearch}”.
                         </td>
                       </tr>
@@ -1616,7 +1615,6 @@ export function IndirectCommissionDashboard({
                             {pr && <Delta current={r.revenue} prev={pr.revenue} fmt={(n) => fmtOMR(Math.abs(n))} />}
                           </div>
                         </td>
-                        <td className={tdR}>{fmtOMR(Math.round(r.revenue / r.count))}</td>
                       </Row>
                       );
                     })}
@@ -1627,7 +1625,6 @@ export function IndirectCommissionDashboard({
                         <td className={`${td} font-semibold text-gray-900 dark:text-gray-100`} colSpan={2}>Total</td>
                         <td className={`${tdR} font-bold text-gray-900 dark:text-gray-100`}>{fmtNum(totCount)}</td>
                         <td className={`${tdR} font-bold text-emerald-600 dark:text-emerald-400`}>{fmtOMR(totRev)}</td>
-                        <td className={`${tdR} font-semibold`}>{fmtOMR(Math.round(totRev / totCount))}</td>
                       </tr>
                     </tfoot>
                   )}
