@@ -2068,8 +2068,8 @@ export function IndirectCommissionDashboard({
             </ResponsiveContainer>
           </SectionCard>
 
-          {/* Commission Cycle Status */}
-          {(() => {
+          {/* Commission Cycle Status — hidden for now; flip `false &&` to restore. */}
+          {false && (() => {
             const stages = D.commissionCycle.stages;
             const doneCount = stages.filter((s) => s.status === "done").length;
             const current = stages.find((s) => s.status === "current");
