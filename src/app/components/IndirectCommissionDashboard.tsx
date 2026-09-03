@@ -43,6 +43,7 @@ import {
 } from "./ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { RevenueMatrix } from "./RevenueMatrix";
+import { FEATURES } from "./featureFlags";
 import { PARTNERS, COMMISSION_PLANS, getIndirectData } from "./indirectData";
 import { useIsMobile } from "./ui/use-mobile";
 
@@ -1221,9 +1222,18 @@ export function IndirectCommissionDashboard({
           />
 
           {/* Performance Overview — Charts (gauges) / Table (by CR).
-              Toggle hidden for now; restore by rendering <SegTabs> into viewToggle. */}
+              Toggle controlled by FEATURES.performanceOverviewViewToggle. */}
           {(() => {
-            const viewToggle: React.ReactNode = null;
+            const viewToggle: React.ReactNode = FEATURES.performanceOverviewViewToggle ? (
+              <SegTabs
+                value={overviewView}
+                onChange={setOverviewView}
+                options={[
+                  { value: "charts", label: "Charts" },
+                  { value: "table", label: "Table" },
+                ]}
+              />
+            ) : null;
             return overviewView === "charts" ? (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <RevenueMatrix
@@ -1367,8 +1377,9 @@ export function IndirectCommissionDashboard({
             );
           })()}
 
-          {/* Inactive CRs — no activation in 24+ months. Hidden — surfaced via the tile's detail dialog. */}
-          {false && (() => {
+          {/* Inactive CRs — no activation in 24+ months. Controlled by FEATURES.inactiveCRsSection
+              (data is always reachable via the "Inactive CRs" tile popup). */}
+          {FEATURES.inactiveCRsSection && (() => {
             const q = inactiveSearch.trim().toLowerCase();
             const rows = D.inactiveCRList.filter(
               (c) => !q || c.name.toLowerCase().includes(q) || c.cr.toLowerCase().includes(q) || c.partner.toLowerCase().includes(q),
@@ -1573,11 +1584,12 @@ export function IndirectCommissionDashboard({
                     <Th>Segment</Th>
                     <Th align="right">Activations</Th>
                     <Th align="right">Revenue</Th>
+                    {FEATURES.activationTypeAvgColumn && <Th align="right">Avg / Activation</Th>}
                   </HeadRow>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
                     {atRows.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
+                        <td colSpan={FEATURES.activationTypeAvgColumn ? 5 : 4} className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
                           No rows match “{atSearch}”.
                         </td>
                       </tr>
@@ -1607,6 +1619,9 @@ export function IndirectCommissionDashboard({
                             {pr && <Delta current={r.revenue} prev={pr.revenue} fmt={(n) => fmtOMR(Math.abs(n))} />}
                           </div>
                         </td>
+                        {FEATURES.activationTypeAvgColumn && (
+                          <td className={tdR}>{fmtOMR(Math.round(r.revenue / r.count))}</td>
+                        )}
                       </Row>
                       );
                     })}
@@ -1617,6 +1632,9 @@ export function IndirectCommissionDashboard({
                         <td className={`${td} font-semibold text-gray-900 dark:text-gray-100`} colSpan={2}>Total</td>
                         <td className={`${tdR} font-bold text-gray-900 dark:text-gray-100`}>{fmtNum(totCount)}</td>
                         <td className={`${tdR} font-bold text-emerald-600 dark:text-emerald-400`}>{fmtOMR(totRev)}</td>
+                        {FEATURES.activationTypeAvgColumn && (
+                          <td className={`${tdR} font-semibold`}>{fmtOMR(Math.round(totRev / totCount))}</td>
+                        )}
                       </tr>
                     </tfoot>
                   )}
@@ -2068,8 +2086,8 @@ export function IndirectCommissionDashboard({
             </ResponsiveContainer>
           </SectionCard>
 
-          {/* Commission Cycle Status — hidden for now; flip `false &&` to restore. */}
-          {false && (() => {
+          {/* Commission Cycle Status — controlled by FEATURES.commissionCycleStatus (requirement 2.2). */}
+          {FEATURES.commissionCycleStatus && (() => {
             const stages = D.commissionCycle.stages;
             const doneCount = stages.filter((s) => s.status === "done").length;
             const current = stages.find((s) => s.status === "current");

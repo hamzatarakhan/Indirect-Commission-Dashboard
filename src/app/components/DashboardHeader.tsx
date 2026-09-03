@@ -8,6 +8,7 @@ import { Label } from './ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { DarkModeToggle } from './DarkModeToggle';
 import { VerticalSelector } from './VerticalSelector';
+import { FEATURES } from './featureFlags';
 import { toast } from 'sonner';
 import type { UserScope } from '../utils/scopeResolver';
 
@@ -332,8 +333,8 @@ export function DashboardHeader({
               </SelectContent>
             </Select>
 
-            {/* Period Comparison Toggle — hidden for now; revert this `false &&` to restore */}
-            {false && (
+            {/* Period Comparison Toggle — controlled by FEATURES.compareMode */}
+            {FEATURES.compareMode && (
             <Button
               onClick={() => setComparisonMode(!comparisonMode)}
               variant="outline"
@@ -513,8 +514,8 @@ export function DashboardHeader({
 
             {/* Action Buttons - Commission & Dark Mode */}
             <div className="flex items-stretch gap-2 sm:gap-3 flex-shrink-0">
-              {/* Navigate to Indirect Commission Dashboard — hidden for now */}
-              {false && onNavigateToIndirectCommission && (
+              {/* Navigate to Indirect Commission Dashboard — controlled by FEATURES.headerIndirectNavIcon */}
+              {FEATURES.headerIndirectNavIcon && onNavigateToIndirectCommission && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
