@@ -723,7 +723,7 @@ function StatDetailDialog({
       >
         <DialogHeader>
           <DialogTitle>{open ? titles[open] : ""}</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="sr-only">
             {P ? `${cmpLabel} — figures for the current period` : "Current period breakdown"}
           </DialogDescription>
         </DialogHeader>
@@ -854,16 +854,11 @@ function StatDetailDialog({
 
         {open === "inactive" && (
           <div>
-            <div className="grid grid-cols-3 gap-2">
-              <StatBox label="Dormant CRs" value={fmtNum(D.inactiveCRs)} tone="bad" />
-              <StatBox label="Showing" value={`${inactiveRows.length} / ${D.inactiveCRList.length}`} sub="sample" />
-              <StatBox
-                label="Avg dormant"
-                value={`${Math.round(D.inactiveCRList.reduce((s, c) => s + c.monthsInactive, 0) / Math.max(1, D.inactiveCRList.length))} mo`}
-                tone="warn"
-              />
-            </div>
-            <div className="mb-2 mt-4">
+            <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">
+              <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(D.inactiveCRs)}</span> CRs with
+              no recorded activation in 24+ months — showing a sample of {D.inactiveCRList.length}.
+            </p>
+            <div className="mb-2">
               <SearchInput value={q} onChange={setQ} placeholder="Search company / partner / CR" width="w-full" light />
             </div>
             <DlgTable
