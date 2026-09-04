@@ -721,7 +721,7 @@ function StatDetailDialog({
       <DialogContent
         className={`max-h-[85vh] gap-0 overflow-y-auto ${open === "inactive" ? "sm:max-w-3xl" : "sm:max-w-2xl"}`}
       >
-        <DialogHeader>
+        <DialogHeader className="mb-4">
           <DialogTitle>{open ? titles[open] : ""}</DialogTitle>
           <DialogDescription className="sr-only">
             {P ? `${cmpLabel} — figures for the current period` : "Current period breakdown"}
