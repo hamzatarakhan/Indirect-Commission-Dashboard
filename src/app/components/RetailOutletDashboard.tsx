@@ -366,7 +366,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
   const cmEarned = D.achievementVsPayout.reduce((s, p) => s + p.commissionEarned, 0);
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-3">
+    <div className="space-y-3">
       {/* ===== filter card ===== */}
       <div className={`${cardShell} p-4`}>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
