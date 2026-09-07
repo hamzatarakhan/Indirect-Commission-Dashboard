@@ -36,6 +36,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useIsMobile } from "./ui/use-mobile";
 import { REGIONS, RETAIL_PLANS, STAFF_TYPES, getRetailData } from "./retailData";
 import type { RetailData } from "./retailData";
+import { FEATURES } from "./featureFlags";
 
 // ---- formatting --------------------------------------------------------------
 const fmtNum = (n: number) => Math.round(n).toLocaleString();
@@ -866,7 +867,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
           </SectionCard>
 
           {/* Commission Cycle Status */}
-          {(() => {
+          {FEATURES.retailCommissionCycleStatus && (() => {
             const stages = D.commissionCycle.stages;
             const doneCount = stages.filter((s) => s.status === "done").length;
             const current = stages.find((s) => s.status === "current");

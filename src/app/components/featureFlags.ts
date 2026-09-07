@@ -42,4 +42,12 @@ export const FEATURES = {
    * Analysis table. Not in the brief — a derived metric we added.
    */
   activationTypeAvgColumn: false,
+
+  /**
+   * Retail Outlet dashboard → Commission tab → "Commission Cycle Status" section
+   * (5-step stepper + summary strip). Maps to the Retail brief's "Commission
+   * Cycle Status" — flip to `true` for final delivery. Mirrors
+   * `commissionCycleStatus` on the Indirect dashboard.
+   */
+  retailCommissionCycleStatus: false,
 } as const;
