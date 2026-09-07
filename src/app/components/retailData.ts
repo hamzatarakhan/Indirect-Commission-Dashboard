@@ -145,6 +145,10 @@ export function getRetailData(f: RetailFilters) {
   const activeOutlets = outletActs.length;
   const avgPerOutlet = activeOutlets ? r(totalActivations / activeOutlets) : 0;
 
+  // 6-month spark trend for a given total (deterministic, gentle upward drift).
+  const spark = (base: number, seed = 0) =>
+    MONTHS.map((_, i) => r((base / MONTHS.length) * (0.78 + i * 0.1) * (1 + Math.sin(i + seed) * 0.05)));
+
   // ---- outlet ranking ----
   const outletRanking = [...outletActs]
     .sort((a, b) => b.activations - a.activations)
@@ -156,9 +160,10 @@ export function getRetailData(f: RetailFilters) {
       staff: o.staffScoped,
       activations: o.activations,
       share: totalActivations ? (o.activations / totalActivations) * 100 : 0,
+      trend: spark(o.activations, o.outlet.length),
     }));
 
-  // ---- activations by plan ----
+  // ---- activations by plan (counts + product mix) ----
   const activationsByPlan = RETAIL_PLANS.map((plan) => ({
     plan,
     activations: isPlan
@@ -166,7 +171,28 @@ export function getRetailData(f: RetailFilters) {
         ? totalActivations
         : 0
       : r(totalActivations * (PLAN_MIX[plan] ?? 0)),
-  })).filter((p) => !isPlan || p.plan === f.plan);
+  }))
+    .filter((p) => !isPlan || p.plan === f.plan)
+    .map((p) => ({ ...p, share: totalActivations ? (p.activations / totalActivations) * 100 : 0 }));
+
+  // ---- activation performance by plan (volume table) ----
+  const PLAN_MOM: Record<string, number> = {
+    "Retail Mobile Activations": 7.4,
+    "Retail A'amali": 3.1,
+    "Retail Upgrade": 5.8,
+    "Retail Fixed Activations": -2.2,
+  };
+  const activationPerfByPlan = RETAIL_PLANS.filter((p) => !isPlan || p === f.plan).map((plan) => {
+    const acts = isPlan && plan === f.plan ? totalActivations : r(totalActivations * (PLAN_MIX[plan] ?? 0));
+    return {
+      plan,
+      activations: acts,
+      eligible: r(acts * PLAN_MODEL[plan].eligibleRate),
+      share: totalActivations ? (acts / totalActivations) * 100 : 0,
+      momPct: PLAN_MOM[plan] ?? 0,
+      trend: spark(acts, plan.length),
+    };
+  });
 
   // ---- region performance ----
   const byRegion = new Map<string, { activations: number; outlets: number }>();
@@ -182,6 +208,7 @@ export function getRetailData(f: RetailFilters) {
       outlets: v.outlets,
       activations: v.activations,
       share: totalActivations ? (v.activations / totalActivations) * 100 : 0,
+      trend: spark(v.activations, region.length),
     }))
     .sort((a, b) => b.activations - a.activations);
 
@@ -197,7 +224,6 @@ export function getRetailData(f: RetailFilters) {
   const targetView = {
     hasTargets: false as const,
     note: "Retail Outlets do not have activation targets yet. This view activates automatically once targets are provided.",
-    columns: ["Scope", "Activation Target", "Actual Activations", "Achievement %", "Gap to Target", "Rank", "Monthly Trend"],
     rows: outletRanking.map((o) => ({
       scope: o.outlet,
       region: o.region,
@@ -206,11 +232,12 @@ export function getRetailData(f: RetailFilters) {
       achievementPct: null as number | null,
       gap: null as number | null,
       rank: o.rank,
+      trend: o.trend,
     })),
   };
 
   // ---- commission by plan ----
-  const commissionByPlan = RETAIL_PLANS.filter((p) => !isPlan || p === f.plan).map((plan) => {
+  const commissionByPlanRaw = RETAIL_PLANS.filter((p) => !isPlan || p === f.plan).map((plan) => {
     const acts = isPlan && plan === f.plan
       ? totalActivations
       : r(totalActivations * (PLAN_MIX[plan] ?? 0));
@@ -228,13 +255,42 @@ export function getRetailData(f: RetailFilters) {
       totalPaid,
       staffCount: planStaff,
       avgPerStaff: planStaff ? fmtOMR0(totalPaid / planStaff) : 0,
-      outletContributionPct: 0, // filled below
+      contributionPct: 0,
     };
   });
-  const paidTotal = commissionByPlan.reduce((s, p) => s + p.totalPaid, 0);
-  for (const p of commissionByPlan) {
-    p.outletContributionPct = paidTotal ? (p.totalPaid / paidTotal) * 100 : 0;
-  }
+  const paidTotal = commissionByPlanRaw.reduce((s, p) => s + p.totalPaid, 0);
+  const commissionByPlan = commissionByPlanRaw.map((p) => ({
+    ...p,
+    contributionPct: paidTotal ? (p.totalPaid / paidTotal) * 100 : 0,
+  }));
+  const blendedCommPct = totalActivations
+    ? commissionByPlan.reduce((s, p) => s + p.commissionPct * (p.activations / totalActivations), 0)
+    : 13;
+  const blendedRate = 5.9;
+
+  // ---- commission by OUTLET (outlet-level visibility + Outlet Contribution %) ----
+  const commissionByOutletRaw = outletActs.map((o) => {
+    const eligible = r(o.activations * 0.92);
+    const totalPaid = fmtOMR0(eligible * blendedRate * o.bias);
+    const achievementPct = clampPct(90 + (o.bias - 1) * 45 + ((QUARTER_VAR[f.quarter] ?? 1) - 1) * 30);
+    return {
+      outlet: o.outlet,
+      region: o.region,
+      account: o.account,
+      activations: o.activations,
+      eligibleActivations: eligible,
+      achievementPct,
+      commissionPct: Math.round(blendedCommPct * 10) / 10,
+      totalPaid,
+      staffCount: o.staffScoped,
+      avgPerStaff: o.staffScoped ? fmtOMR0(totalPaid / o.staffScoped) : 0,
+      contributionPct: 0,
+    };
+  });
+  const outletPaidTotal = commissionByOutletRaw.reduce((s, o) => s + o.totalPaid, 0);
+  const commissionByOutlet = commissionByOutletRaw
+    .map((o) => ({ ...o, contributionPct: outletPaidTotal ? (o.totalPaid / outletPaidTotal) * 100 : 0 }))
+    .sort((a, b) => b.totalPaid - a.totalPaid);
 
   // ---- achievement vs payout analysis ----
   const achievementVsPayout = commissionByPlan.map((p) => ({
@@ -257,6 +313,19 @@ export function getRetailData(f: RetailFilters) {
       { label: "Payout", date: "2026-09-16", status: "upcoming" as const },
     ],
   };
+
+  // ---- drill-through: outlets in a region (Region → Outlet) ----
+  const regionOutlets = (regionName: string) =>
+    commissionByOutlet
+      .filter((o) => o.region === regionName)
+      .map((o) => ({
+        outlet: o.outlet,
+        account: o.account,
+        activations: o.activations,
+        totalPaid: o.totalPaid,
+        staff: o.staffCount,
+      }))
+      .sort((a, b) => b.activations - a.activations);
 
   // ---- drill-through: staff per outlet ----
   const staffByOutlet = (outletName: string) => {
@@ -293,15 +362,19 @@ export function getRetailData(f: RetailFilters) {
     avgPerOutlet,
     outletRanking,
     activationsByPlan,
+    activationPerfByPlan,
     regionPerformance,
     monthlyTrend,
     targetView,
+    months: MONTHS,
     commissionByPlan,
+    commissionByOutlet,
     achievementVsPayout,
     commissionCycle,
     paidTotal,
     eligibleTotal: commissionByPlan.reduce((s, p) => s + p.eligibleActivations, 0),
     // drill-through helpers
+    regionOutlets,
     staffByOutlet,
     activationsForStaff,
     // lists for filters

@@ -313,6 +313,22 @@ const dlgThR = "px-3 py-2 text-right font-semibold";
 const dlgTd = "px-3 py-2 text-gray-700 dark:text-gray-300";
 const dlgTdR = "px-3 py-2 text-right tabular-nums text-gray-700 dark:text-gray-300";
 
+// Tiny inline trend line for table cells.
+function Sparkline({ points, tone = "#3b82f6" }: { points: number[]; tone?: string }) {
+  if (!points || points.length < 2) return <span className="text-gray-300 dark:text-gray-600">—</span>;
+  const w = 56, h = 16, max = Math.max(...points), min = Math.min(...points);
+  const span = max - min || 1;
+  const d = points
+    .map((p, i) => `${(i / (points.length - 1)) * w},${h - ((p - min) / span) * (h - 2) - 1}`)
+    .join(" ");
+  const up = points[points.length - 1] >= points[0];
+  return (
+    <svg width={w} height={h} className="inline-block align-middle">
+      <polyline points={d} fill="none" stroke={up ? "#10b981" : "#ef4444"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={tone ? 1 : 1} />
+    </svg>
+  );
+}
+
 // ---------------------------------------------------------------------------
 
 interface Props {
@@ -321,9 +337,10 @@ interface Props {
   year: string;
 }
 
+type DrillRegion = { kind: "region"; region: string };
 type DrillOutlet = { kind: "outlet"; outlet: string; region: string };
 type DrillStaff = { kind: "staff"; outlet: string; staff: string };
-type Drill = DrillOutlet | DrillStaff | null;
+type Drill = DrillRegion | DrillOutlet | DrillStaff | null;
 
 const PLAN_COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b"];
 
@@ -338,6 +355,8 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
 
   const [rankSearch, setRankSearch] = React.useState("");
   const [rankScope, setRankScope] = React.useState<"all" | "Managed" | "Unmanaged">("all");
+  const [overviewLevel, setOverviewLevel] = React.useState<"region" | "outlet">("region");
+  const [commLevel, setCommLevel] = React.useState<"plan" | "outlet">("plan");
   const [drill, setDrill] = React.useState<Drill>(null);
 
   const D: RetailData = React.useMemo(
@@ -513,32 +532,124 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
             </SectionCard>
           </div>
 
-          {/* Region Performance */}
-          <SectionCard icon={<MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />} title="Region Performance">
-            <DataTable minWidth={520}>
+          {/* Activation Performance by Plan */}
+          <SectionCard icon={<Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />} title="Activation Performance by Plan">
+            <DataTable minWidth={620}>
               <HeadRow>
-                <Th>Region</Th>
-                <Th align="right">Outlets</Th>
+                <Th>Plan</Th>
                 <Th align="right">Activations</Th>
+                <Th align="right">Eligible</Th>
                 <Th align="right">Share</Th>
+                <Th align="right">MoM</Th>
+                <Th align="right">Monthly Trend</Th>
               </HeadRow>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
-                {D.regionPerformance.map((rg, i) => (
-                  <Row key={rg.region} i={i} onClick={() => setRegion(rg.region)}>
-                    <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{rg.region}</td>
-                    <td className={tdR}>{fmtNum(rg.outlets)}</td>
+                {D.activationPerfByPlan.map((p, i) => (
+                  <Row key={p.plan} i={i}>
+                    <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{p.plan}</td>
+                    <td className={`${tdR} font-semibold text-gray-900 dark:text-gray-100`}>{fmtNum(p.activations)}</td>
+                    <td className={tdR}>{fmtNum(p.eligible)}</td>
+                    <td className={tdR}>{p.share.toFixed(1)}%</td>
                     <td className={tdR}>
-                      <div className="flex items-center justify-end gap-2.5">
-                        <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(rg.activations)}</span>
-                        <MiniBar value={rg.share} max={Math.max(1, ...D.regionPerformance.map((x) => x.share))} tone="green" />
-                      </div>
+                      <span className={`inline-flex items-center gap-0.5 text-[11px] font-medium ${p.momPct > 0.5 ? "text-emerald-600 dark:text-emerald-400" : p.momPct < -0.5 ? "text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500"}`}>
+                        {p.momPct > 0.5 ? <ArrowUp className="h-3 w-3" /> : p.momPct < -0.5 ? <ArrowDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                        {p.momPct >= 0 ? "+" : ""}{p.momPct.toFixed(1)}%
+                      </span>
                     </td>
-                    <td className={tdR}>{rg.share.toFixed(1)}%</td>
+                    <td className={tdR}><Sparkline points={p.trend} /></td>
                   </Row>
                 ))}
               </tbody>
+              <tfoot className="border-t-2 border-gray-200 bg-white font-semibold text-gray-900 dark:border-gray-700 dark:bg-[#07112F] dark:text-gray-100">
+                <tr>
+                  <td className={td}>Total</td>
+                  <td className={tdR}>{fmtNum(D.activationPerfByPlan.reduce((s, p) => s + p.activations, 0))}</td>
+                  <td className={tdR}>{fmtNum(D.activationPerfByPlan.reduce((s, p) => s + p.eligible, 0))}</td>
+                  <td className={tdR}>100%</td>
+                  <td className={tdR} />
+                  <td className={tdR} />
+                </tr>
+              </tfoot>
             </DataTable>
-            <p className="mt-2 text-[11px] text-gray-400 dark:text-gray-500">Tap a region to scope the whole dashboard to it.</p>
+          </SectionCard>
+
+          {/* Performance Overview — Region / Outlet */}
+          <SectionCard
+            icon={<MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+            title="Performance Overview"
+            action={
+              <TableTools>
+                <SegTabs
+                  value={overviewLevel}
+                  onChange={setOverviewLevel}
+                  options={[
+                    { value: "region", label: "By Region" },
+                    { value: "outlet", label: "By Outlet" },
+                  ]}
+                />
+              </TableTools>
+            }
+          >
+            {overviewLevel === "region" ? (
+              <DataTable minWidth={520}>
+                <HeadRow>
+                  <Th>Region</Th>
+                  <Th align="right">Outlets</Th>
+                  <Th align="right">Activations</Th>
+                  <Th align="right">Share</Th>
+                  <Th align="right">Trend</Th>
+                  <Th>{""}</Th>
+                </HeadRow>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
+                  {D.regionPerformance.map((rg, i) => (
+                    <Row key={rg.region} i={i} onClick={() => setDrill({ kind: "region", region: rg.region })}>
+                      <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{rg.region}</td>
+                      <td className={tdR}>{fmtNum(rg.outlets)}</td>
+                      <td className={tdR}>
+                        <div className="flex items-center justify-end gap-2.5">
+                          <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(rg.activations)}</span>
+                          <MiniBar value={rg.share} max={Math.max(1, ...D.regionPerformance.map((x) => x.share))} tone="green" />
+                        </div>
+                      </td>
+                      <td className={tdR}>{rg.share.toFixed(1)}%</td>
+                      <td className={tdR}><Sparkline points={rg.trend} /></td>
+                      <td className={td}><ChevronRight className="h-4 w-4 text-gray-300 dark:text-gray-600" /></td>
+                    </Row>
+                  ))}
+                </tbody>
+              </DataTable>
+            ) : (
+              <DataTable minWidth={560}>
+                <HeadRow>
+                  <Th>Outlet</Th>
+                  <Th>Region</Th>
+                  <Th align="right">Activations</Th>
+                  <Th align="right">Share</Th>
+                  <Th align="right">Trend</Th>
+                  <Th>{""}</Th>
+                </HeadRow>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
+                  {D.outletRanking.map((o, i) => (
+                    <Row key={o.outlet} i={i} onClick={() => setDrill({ kind: "outlet", outlet: o.outlet, region: o.region })}>
+                      <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{o.outlet}</td>
+                      <td className={`${td} text-gray-500 dark:text-gray-400`}>{o.region}</td>
+                      <td className={tdR}>
+                        <div className="flex items-center justify-end gap-2.5">
+                          <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(o.activations)}</span>
+                          <MiniBar value={o.activations} max={rankMax} />
+                        </div>
+                      </td>
+                      <td className={tdR}>{o.share.toFixed(1)}%</td>
+                      <td className={tdR}><Sparkline points={o.trend} /></td>
+                      <td className={td}><ChevronRight className="h-4 w-4 text-gray-300 dark:text-gray-600" /></td>
+                    </Row>
+                  ))}
+                </tbody>
+              </DataTable>
+            )}
+            <p className="mt-2 text-[11px] text-gray-400 dark:text-gray-500">
+              {overviewLevel === "region" ? "Tap a region to see its outlets." : "Tap an outlet to see its staff and activations."}
+            </p>
           </SectionCard>
 
           {/* Target vs Achievement — future-ready */}
@@ -554,6 +665,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                 <Th align="right">Actual Activations</Th>
                 <Th align="right">Achievement %</Th>
                 <Th align="right">Gap to Target</Th>
+                <Th align="right">Monthly Trend</Th>
                 <Th align="right">Rank</Th>
               </HeadRow>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
@@ -565,6 +677,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                     <td className={`${tdR} font-semibold text-gray-900 dark:text-gray-100`}>{fmtNum(rw.actual)}</td>
                     <td className={`${tdR} text-gray-400 dark:text-gray-500`}>—</td>
                     <td className={`${tdR} text-gray-400 dark:text-gray-500`}>—</td>
+                    <td className={tdR}><Sparkline points={rw.trend} /></td>
                     <td className={tdR}>{rw.rank}</td>
                   </Row>
                 ))}
@@ -582,56 +695,127 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
             <StatTile label="Avg Commission / Staff" value={fmtOMR(D.paidTotal / Math.max(1, D.staffCount))} sub="blended across all plans" />
           </div>
 
-          {/* Commission by Plan */}
-          <SectionCard icon={<Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400" />} title="Commission by Plan">
-            <DataTable minWidth={1080}>
-              <HeadRow>
-                <Th>Plan</Th>
-                <Th align="right"># Activations</Th>
-                <Th align="right">Eligible</Th>
-                <Th align="right">Achievement %</Th>
-                <Th align="right">Comm. %</Th>
-                <Th align="right">Total Paid</Th>
-                <Th align="right">Staff</Th>
-                <Th align="right">Avg / Staff</Th>
-                <Th align="right">Contribution</Th>
-              </HeadRow>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
-                {D.commissionByPlan.map((p, i) => (
-                  <Row key={p.plan} i={i}>
-                    <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{p.plan}</td>
-                    <td className={tdR}>{fmtNum(p.activations)}</td>
-                    <td className={tdR}>{fmtNum(p.eligibleActivations)}</td>
-                    <td className={tdR}>
-                      <Pill tone={p.achievementPct >= 100 ? "green" : p.achievementPct >= 90 ? "amber" : "red"}>{p.achievementPct}%</Pill>
-                    </td>
-                    <td className={tdR}>{p.commissionPct}%</td>
-                    <td className={`${tdR} font-semibold text-emerald-600 dark:text-emerald-400`}>{fmtOMR(p.totalPaid)}</td>
-                    <td className={tdR}>{fmtNum(p.staffCount)}</td>
-                    <td className={tdR}>{fmtOMR(p.avgPerStaff)}</td>
-                    <td className={tdR}>
-                      <div className="flex items-center justify-end gap-2.5">
-                        <span>{p.outletContributionPct.toFixed(1)}%</span>
-                        <MiniBar value={p.outletContributionPct} max={Math.max(1, ...D.commissionByPlan.map((x) => x.outletContributionPct))} />
-                      </div>
-                    </td>
-                  </Row>
-                ))}
-              </tbody>
-              <tfoot className="border-t-2 border-gray-200 bg-white font-semibold text-gray-900 dark:border-gray-700 dark:bg-[#07112F] dark:text-gray-100">
-                <tr>
-                  <td className={td}>Total</td>
-                  <td className={tdR}>{fmtNum(cmActs)}</td>
-                  <td className={tdR}>{fmtNum(cmEligible)}</td>
-                  <td className={tdR} />
-                  <td className={tdR} />
-                  <td className={`${tdR} text-emerald-600 dark:text-emerald-400`}>{fmtOMR(cmPaidTotal)}</td>
-                  <td className={tdR} />
-                  <td className={tdR} />
-                  <td className={tdR}>100%</td>
-                </tr>
-              </tfoot>
-            </DataTable>
+          {/* Commission Overview — Plan / Outlet */}
+          <SectionCard
+            icon={<Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+            title="Commission Overview"
+            action={
+              <TableTools>
+                <SegTabs
+                  value={commLevel}
+                  onChange={setCommLevel}
+                  options={[
+                    { value: "plan", label: "By Plan" },
+                    { value: "outlet", label: "By Outlet" },
+                  ]}
+                />
+              </TableTools>
+            }
+          >
+            {commLevel === "plan" ? (
+              <DataTable minWidth={1080}>
+                <HeadRow>
+                  <Th>Plan</Th>
+                  <Th align="right"># Activations</Th>
+                  <Th align="right">Eligible</Th>
+                  <Th align="right">Achievement %</Th>
+                  <Th align="right">Comm. %</Th>
+                  <Th align="right">Total Paid</Th>
+                  <Th align="right">Staff</Th>
+                  <Th align="right">Avg / Staff</Th>
+                  <Th align="right">Contribution</Th>
+                </HeadRow>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
+                  {D.commissionByPlan.map((p, i) => (
+                    <Row key={p.plan} i={i}>
+                      <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{p.plan}</td>
+                      <td className={tdR}>{fmtNum(p.activations)}</td>
+                      <td className={tdR}>{fmtNum(p.eligibleActivations)}</td>
+                      <td className={tdR}>
+                        <Pill tone={p.achievementPct >= 100 ? "green" : p.achievementPct >= 90 ? "amber" : "red"}>{p.achievementPct}%</Pill>
+                      </td>
+                      <td className={tdR}>{p.commissionPct}%</td>
+                      <td className={`${tdR} font-semibold text-emerald-600 dark:text-emerald-400`}>{fmtOMR(p.totalPaid)}</td>
+                      <td className={tdR}>{fmtNum(p.staffCount)}</td>
+                      <td className={tdR}>{fmtOMR(p.avgPerStaff)}</td>
+                      <td className={tdR}>
+                        <div className="flex items-center justify-end gap-2.5">
+                          <span>{p.contributionPct.toFixed(1)}%</span>
+                          <MiniBar value={p.contributionPct} max={Math.max(1, ...D.commissionByPlan.map((x) => x.contributionPct))} />
+                        </div>
+                      </td>
+                    </Row>
+                  ))}
+                </tbody>
+                <tfoot className="border-t-2 border-gray-200 bg-white font-semibold text-gray-900 dark:border-gray-700 dark:bg-[#07112F] dark:text-gray-100">
+                  <tr>
+                    <td className={td}>Total</td>
+                    <td className={tdR}>{fmtNum(cmActs)}</td>
+                    <td className={tdR}>{fmtNum(cmEligible)}</td>
+                    <td className={tdR} />
+                    <td className={tdR} />
+                    <td className={`${tdR} text-emerald-600 dark:text-emerald-400`}>{fmtOMR(cmPaidTotal)}</td>
+                    <td className={tdR} />
+                    <td className={tdR} />
+                    <td className={tdR}>100%</td>
+                  </tr>
+                </tfoot>
+              </DataTable>
+            ) : (
+              <DataTable minWidth={1080}>
+                <HeadRow>
+                  <Th>Outlet</Th>
+                  <Th>Region</Th>
+                  <Th align="right"># Activations</Th>
+                  <Th align="right">Eligible</Th>
+                  <Th align="right">Achievement %</Th>
+                  <Th align="right">Comm. %</Th>
+                  <Th align="right">Total Paid</Th>
+                  <Th align="right">Staff</Th>
+                  <Th align="right">Avg / Staff</Th>
+                  <Th align="right">Outlet Contribution</Th>
+                  <Th>{""}</Th>
+                </HeadRow>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
+                  {D.commissionByOutlet.map((o, i) => (
+                    <Row key={o.outlet} i={i} onClick={() => setDrill({ kind: "outlet", outlet: o.outlet, region: o.region })}>
+                      <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{o.outlet}</td>
+                      <td className={`${td} text-gray-500 dark:text-gray-400`}>{o.region}</td>
+                      <td className={tdR}>{fmtNum(o.activations)}</td>
+                      <td className={tdR}>{fmtNum(o.eligibleActivations)}</td>
+                      <td className={tdR}>
+                        <Pill tone={o.achievementPct >= 100 ? "green" : o.achievementPct >= 90 ? "amber" : "red"}>{o.achievementPct}%</Pill>
+                      </td>
+                      <td className={tdR}>{o.commissionPct}%</td>
+                      <td className={`${tdR} font-semibold text-emerald-600 dark:text-emerald-400`}>{fmtOMR(o.totalPaid)}</td>
+                      <td className={tdR}>{fmtNum(o.staffCount)}</td>
+                      <td className={tdR}>{fmtOMR(o.avgPerStaff)}</td>
+                      <td className={tdR}>
+                        <div className="flex items-center justify-end gap-2.5">
+                          <span>{o.contributionPct.toFixed(1)}%</span>
+                          <MiniBar value={o.contributionPct} max={Math.max(1, ...D.commissionByOutlet.map((x) => x.contributionPct))} />
+                        </div>
+                      </td>
+                      <td className={td}><ChevronRight className="h-4 w-4 text-gray-300 dark:text-gray-600" /></td>
+                    </Row>
+                  ))}
+                </tbody>
+                <tfoot className="border-t-2 border-gray-200 bg-white font-semibold text-gray-900 dark:border-gray-700 dark:bg-[#07112F] dark:text-gray-100">
+                  <tr>
+                    <td className={td} colSpan={2}>Total ({D.commissionByOutlet.length} outlets)</td>
+                    <td className={tdR}>{fmtNum(D.commissionByOutlet.reduce((s, o) => s + o.activations, 0))}</td>
+                    <td className={tdR}>{fmtNum(D.commissionByOutlet.reduce((s, o) => s + o.eligibleActivations, 0))}</td>
+                    <td className={tdR} />
+                    <td className={tdR} />
+                    <td className={`${tdR} text-emerald-600 dark:text-emerald-400`}>{fmtOMR(D.commissionByOutlet.reduce((s, o) => s + o.totalPaid, 0))}</td>
+                    <td className={tdR} />
+                    <td className={tdR} />
+                    <td className={tdR}>100%</td>
+                    <td className={td} />
+                  </tr>
+                </tfoot>
+              </DataTable>
+            )}
           </SectionCard>
 
           {/* Achievement vs Payout Analysis */}
@@ -745,7 +929,13 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
         </TabsContent>
       </Tabs>
 
-      <DrillDialog drill={drill} onClose={() => setDrill(null)} onOpenStaff={(outletName, staffName) => setDrill({ kind: "staff", outlet: outletName, staff: staffName })} D={D} />
+      <DrillDialog
+        drill={drill}
+        onClose={() => setDrill(null)}
+        onOpenStaff={(outletName, staffName) => setDrill({ kind: "staff", outlet: outletName, staff: staffName })}
+        onOpenOutlet={(outletName, regionName) => setDrill({ kind: "outlet", outlet: outletName, region: regionName })}
+        D={D}
+      />
     </div>
   );
 }
@@ -755,17 +945,27 @@ function DrillDialog({
   drill,
   onClose,
   onOpenStaff,
+  onOpenOutlet,
   D,
 }: {
   drill: Drill;
   onClose: () => void;
   onOpenStaff: (outlet: string, staff: string) => void;
+  onOpenOutlet: (outlet: string, region: string) => void;
   D: RetailData;
 }) {
   const [q, setQ] = React.useState("");
   React.useEffect(() => setQ(""), [drill]);
 
-  const outletName = drill?.outlet ?? "";
+  const regionName = drill?.kind === "region" ? drill.region : "";
+  const regionOutletRows = React.useMemo(
+    () => (regionName ? D.regionOutlets(regionName) : []),
+    [regionName, D],
+  );
+  const filteredRegionOutlets = regionOutletRows.filter(
+    (o) => !q.trim() || o.outlet.toLowerCase().includes(q.trim().toLowerCase()),
+  );
+  const outletName = drill?.kind === "outlet" || drill?.kind === "staff" ? drill.outlet : "";
   const staffRows = React.useMemo(() => (outletName ? D.staffByOutlet(outletName) : []), [outletName, D]);
   const activationRows = React.useMemo(
     () => (drill?.kind === "staff" ? D.activationsForStaff(drill.outlet, drill.staff) : []),
@@ -782,10 +982,49 @@ function DrillDialog({
       <DialogContent className="max-h-[85vh] gap-0 overflow-y-auto sm:max-w-2xl">
         <DialogHeader className="mb-4">
           <DialogTitle>
-            {drill?.kind === "staff" ? `${drill.staff}` : outletName}
+            {drill?.kind === "staff" ? `${drill.staff}` : drill?.kind === "region" ? regionName : outletName}
           </DialogTitle>
           <DialogDescription className="sr-only">Drill-through</DialogDescription>
         </DialogHeader>
+
+        {drill?.kind === "region" && (
+          <div>
+            <div className="grid grid-cols-3 gap-2">
+              <StatBox label="Outlets" value={fmtNum(regionOutletRows.length)} tone="good" />
+              <StatBox label="Activations" value={fmtNum(regionOutletRows.reduce((s, o) => s + o.activations, 0))} />
+              <StatBox label="Commission" value={fmtOMR(regionOutletRows.reduce((s, o) => s + o.totalPaid, 0))} tone="warn" />
+            </div>
+            <div className="mb-2 mt-4">
+              <SearchInput value={q} onChange={setQ} placeholder="Search outlet" width="w-full" light />
+            </div>
+            <DlgTable
+              head={
+                <tr>
+                  <th className={dlgTh}>Outlet</th>
+                  <th className={dlgTh}>Account</th>
+                  <th className={dlgThR}>Staff</th>
+                  <th className={dlgThR}>Activations</th>
+                  <th className={dlgThR}>Commission</th>
+                  <th className={dlgTh}>{""}</th>
+                </tr>
+              }
+            >
+              {filteredRegionOutlets.length === 0 && (
+                <tr><td colSpan={6} className="px-3 py-8 text-center text-sm text-gray-400 dark:text-gray-500">No outlets match “{q}”.</td></tr>
+              )}
+              {filteredRegionOutlets.map((o) => (
+                <tr key={o.outlet} onClick={() => onOpenOutlet(o.outlet, regionName)} className="cursor-pointer transition-colors hover:bg-gray-50/70 dark:hover:bg-white/[0.03]">
+                  <td className={`${dlgTd} font-medium text-gray-900 dark:text-gray-100`}>{o.outlet}</td>
+                  <td className={dlgTd}><Pill tone={o.account === "Managed" ? "blue" : "purple"}>{o.account}</Pill></td>
+                  <td className={dlgTdR}>{fmtNum(o.staff)}</td>
+                  <td className={`${dlgTdR} font-semibold text-gray-900 dark:text-gray-100`}>{fmtNum(o.activations)}</td>
+                  <td className={`${dlgTdR} text-emerald-600 dark:text-emerald-400`}>{fmtOMR(o.totalPaid)}</td>
+                  <td className={dlgTd}><ChevronRight className="h-4 w-4 text-gray-300 dark:text-gray-600" /></td>
+                </tr>
+              ))}
+            </DlgTable>
+          </div>
+        )}
 
         {drill?.kind === "outlet" && (
           <div>
