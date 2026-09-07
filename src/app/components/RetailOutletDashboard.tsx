@@ -11,6 +11,7 @@ import {
   Target,
   Search,
   ChevronRight,
+  ChevronLeft,
   XCircle,
   ArrowUp,
   ArrowDown,
@@ -358,7 +359,10 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
   const [rankScope, setRankScope] = React.useState<"all" | "Managed" | "Unmanaged">("all");
   const [overviewLevel, setOverviewLevel] = React.useState<"region" | "outlet">("region");
   const [commLevel, setCommLevel] = React.useState<"plan" | "outlet">("plan");
-  const [drill, setDrill] = React.useState<Drill>(null);
+  const [drillStack, setDrillStack] = React.useState<Exclude<Drill, null>[]>([]);
+  const drill = drillStack[drillStack.length - 1] ?? null;
+  const openDrill = (d: Exclude<Drill, null>) => setDrillStack([d]);
+  const pushDrill = (d: Exclude<Drill, null>) => setDrillStack((s) => [...s, d]);
 
   const D: RetailData = React.useMemo(
     () => getRetailData({ granularity, region, outlet, plan, staffType, quarter, year }),
@@ -425,7 +429,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
         {/* ================= PERFORMANCE ================= */}
         <TabsContent value="performance" className="space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatTile label="Total Activations" value={fmtNum(D.totalActivations)} tone="good" sub={`across ${D.activeOutlets} outlet${D.activeOutlets === 1 ? "" : "s"}`} onClick={() => D.outletRanking[0] && setDrill({ kind: "outlet", outlet: D.outletRanking[0].outlet, region: D.outletRanking[0].region })} />
+            <StatTile label="Total Activations" value={fmtNum(D.totalActivations)} tone="good" sub={`across ${D.activeOutlets} outlet${D.activeOutlets === 1 ? "" : "s"}`} onClick={() => D.outletRanking[0] && openDrill({ kind: "outlet", outlet: D.outletRanking[0].outlet, region: D.outletRanking[0].region })} />
             <StatTile label="Active Outlets" value={fmtNum(D.activeOutlets)} sub={`${D.regionPerformance.length} region${D.regionPerformance.length === 1 ? "" : "s"}`} />
             <StatTile label="Staff" value={fmtNum(D.staffCount)} sub="engaged in retail activations" />
             <StatTile label="Avg / Outlet" value={fmtNum(D.avgPerOutlet)} sub="activations per outlet" />
@@ -466,7 +470,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                   <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">No outlets match “{rankSearch}”.</td></tr>
                 )}
                 {rankPage.pageRows.map((o, i) => (
-                  <Row key={o.outlet} i={i} onClick={() => setDrill({ kind: "outlet", outlet: o.outlet, region: o.region })}>
+                  <Row key={o.outlet} i={i} onClick={() => openDrill({ kind: "outlet", outlet: o.outlet, region: o.region })}>
                     <td className={`${td} font-mono text-xs text-gray-500 dark:text-gray-400`}>{o.rank}</td>
                     <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{o.outlet}</td>
                     <td className={`${td} text-gray-500 dark:text-gray-400`}>{o.region}</td>
@@ -606,7 +610,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                 </HeadRow>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
                   {overviewRegionPage.pageRows.map((rg, i) => (
-                    <Row key={rg.region} i={i} onClick={() => setDrill({ kind: "region", region: rg.region })}>
+                    <Row key={rg.region} i={i} onClick={() => openDrill({ kind: "region", region: rg.region })}>
                       <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{rg.region}</td>
                       <td className={tdR}>{fmtNum(rg.outlets)}</td>
                       <td className={tdR}>
@@ -634,7 +638,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                 </HeadRow>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
                   {overviewOutletPage.pageRows.map((o, i) => (
-                    <Row key={o.outlet} i={i} onClick={() => setDrill({ kind: "outlet", outlet: o.outlet, region: o.region })}>
+                    <Row key={o.outlet} i={i} onClick={() => openDrill({ kind: "outlet", outlet: o.outlet, region: o.region })}>
                       <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{o.outlet}</td>
                       <td className={`${td} text-gray-500 dark:text-gray-400`}>{o.region}</td>
                       <td className={tdR}>
@@ -782,7 +786,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                 </HeadRow>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
                   {commOutletPage.pageRows.map((o, i) => (
-                    <Row key={o.outlet} i={i} onClick={() => setDrill({ kind: "outlet", outlet: o.outlet, region: o.region })}>
+                    <Row key={o.outlet} i={i} onClick={() => openDrill({ kind: "outlet", outlet: o.outlet, region: o.region })}>
                       <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{o.outlet}</td>
                       <td className={`${td} text-gray-500 dark:text-gray-400`}>{o.region}</td>
                       <td className={tdR}>{fmtNum(o.activations)}</td>
@@ -935,9 +939,11 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
 
       <DrillDialog
         drill={drill}
-        onClose={() => setDrill(null)}
-        onOpenStaff={(outletName, staffName) => setDrill({ kind: "staff", outlet: outletName, staff: staffName })}
-        onOpenOutlet={(outletName, regionName) => setDrill({ kind: "outlet", outlet: outletName, region: regionName })}
+        canBack={drillStack.length > 1}
+        onBack={() => setDrillStack((s) => s.slice(0, -1))}
+        onClose={() => setDrillStack([])}
+        onOpenStaff={(outletName, staffName) => pushDrill({ kind: "staff", outlet: outletName, staff: staffName })}
+        onOpenOutlet={(outletName, regionName) => pushDrill({ kind: "outlet", outlet: outletName, region: regionName })}
         D={D}
       />
     </div>
@@ -947,12 +953,16 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
 // ---- drill-through dialog: Outlet → Staff → Activation Details ---------------
 function DrillDialog({
   drill,
+  canBack,
+  onBack,
   onClose,
   onOpenStaff,
   onOpenOutlet,
   D,
 }: {
   drill: Drill;
+  canBack: boolean;
+  onBack: () => void;
   onClose: () => void;
   onOpenStaff: (outlet: string, staff: string) => void;
   onOpenOutlet: (outlet: string, region: string) => void;
@@ -987,9 +997,21 @@ function DrillDialog({
     <Dialog open={drill !== null} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[85vh] gap-0 overflow-y-auto sm:max-w-2xl">
         <DialogHeader className="mb-4">
-          <DialogTitle>
-            {drill?.kind === "staff" ? `${drill.staff}` : drill?.kind === "region" ? regionName : outletName}
-          </DialogTitle>
+          <div className="flex items-center gap-1.5">
+            {canBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                aria-label="Back"
+                className="-ml-1.5 shrink-0 rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-white/[0.06] dark:hover:text-gray-200"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            )}
+            <DialogTitle>
+              {drill?.kind === "staff" ? `${drill.staff}` : drill?.kind === "region" ? regionName : outletName}
+            </DialogTitle>
+          </div>
           <DialogDescription className="sr-only">Drill-through</DialogDescription>
         </DialogHeader>
 
