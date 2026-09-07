@@ -379,6 +379,11 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
   const rankPage = usePaged(rankRows, 10, rankSearch + rankScope + region + outlet + plan + staffType);
   const rankMax = Math.max(1, ...D.outletRanking.map((o) => o.activations));
 
+  const overviewRegionPage = usePaged(D.regionPerformance, 10, D);
+  const overviewOutletPage = usePaged(D.outletRanking, 10, D);
+  const targetPage = usePaged(D.targetView.rows, 10, D);
+  const commOutletPage = usePaged(D.commissionByOutlet, 10, D);
+
   const planChartData = D.activationsByPlan.map((p) => ({ ...p, short: p.plan.replace("Retail ", "") }));
   const cmPaidTotal = D.commissionByPlan.reduce((s, p) => s + p.totalPaid, 0);
   const cmActs = D.commissionByPlan.reduce((s, p) => s + p.activations, 0);
@@ -592,7 +597,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
             }
           >
             {overviewLevel === "region" ? (
-              <DataTable minWidth={520}>
+              <DataTable minWidth={520} footer={<Pager {...overviewRegionPage} onPage={overviewRegionPage.setPage} />}>
                 <HeadRow>
                   <Th>Region</Th>
                   <Th align="right">Outlets</Th>
@@ -602,7 +607,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                   <Th>{""}</Th>
                 </HeadRow>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
-                  {D.regionPerformance.map((rg, i) => (
+                  {overviewRegionPage.pageRows.map((rg, i) => (
                     <Row key={rg.region} i={i} onClick={() => setDrill({ kind: "region", region: rg.region })}>
                       <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{rg.region}</td>
                       <td className={tdR}>{fmtNum(rg.outlets)}</td>
@@ -620,7 +625,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                 </tbody>
               </DataTable>
             ) : (
-              <DataTable minWidth={560}>
+              <DataTable minWidth={560} footer={<Pager {...overviewOutletPage} onPage={overviewOutletPage.setPage} />}>
                 <HeadRow>
                   <Th>Outlet</Th>
                   <Th>Region</Th>
@@ -630,7 +635,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                   <Th>{""}</Th>
                 </HeadRow>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
-                  {D.outletRanking.map((o, i) => (
+                  {overviewOutletPage.pageRows.map((o, i) => (
                     <Row key={o.outlet} i={i} onClick={() => setDrill({ kind: "outlet", outlet: o.outlet, region: o.region })}>
                       <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{o.outlet}</td>
                       <td className={`${td} text-gray-500 dark:text-gray-400`}>{o.region}</td>
@@ -658,7 +663,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
             <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-800/50 dark:bg-amber-900/20 dark:text-amber-200">
               {D.targetView.note}
             </div>
-            <DataTable minWidth={760}>
+            <DataTable minWidth={760} footer={<Pager {...targetPage} onPage={targetPage.setPage} />}>
               <HeadRow>
                 <Th>Outlet</Th>
                 <Th>Region</Th>
@@ -670,7 +675,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                 <Th align="right">Rank</Th>
               </HeadRow>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
-                {D.targetView.rows.map((rw, i) => (
+                {targetPage.pageRows.map((rw, i) => (
                   <Row key={rw.scope} i={i}>
                     <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{rw.scope}</td>
                     <td className={`${td} text-gray-500 dark:text-gray-400`}>{rw.region}</td>
@@ -763,7 +768,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                 </tfoot>
               </DataTable>
             ) : (
-              <DataTable minWidth={1080}>
+              <DataTable minWidth={1080} footer={<Pager {...commOutletPage} onPage={commOutletPage.setPage} />}>
                 <HeadRow>
                   <Th>Outlet</Th>
                   <Th>Region</Th>
@@ -778,7 +783,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                   <Th>{""}</Th>
                 </HeadRow>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
-                  {D.commissionByOutlet.map((o, i) => (
+                  {commOutletPage.pageRows.map((o, i) => (
                     <Row key={o.outlet} i={i} onClick={() => setDrill({ kind: "outlet", outlet: o.outlet, region: o.region })}>
                       <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{o.outlet}</td>
                       <td className={`${td} text-gray-500 dark:text-gray-400`}>{o.region}</td>
@@ -974,7 +979,9 @@ function DrillDialog({
   );
 
   const filteredStaff = staffRows.filter((s) => !q.trim() || s.staff.toLowerCase().includes(q.trim().toLowerCase()));
-  const staffPage = usePaged(filteredStaff, 8, `${outletName}|${q}`);
+  const staffPage = usePaged(filteredStaff, 10, `${outletName}|${q}`);
+  const regionOutletsPage = usePaged(filteredRegionOutlets, 10, `${regionName}|${q}`);
+  const activationPage = usePaged(activationRows, 10, drill?.kind === "staff" ? `${drill.outlet}|${drill.staff}` : "");
   const rankEntry = D.outletRanking.find((o) => o.outlet === outletName);
   const outletActs = rankEntry?.activations ?? staffRows.reduce((s, x) => s + x.activations, 0);
 
@@ -999,6 +1006,7 @@ function DrillDialog({
               <SearchInput value={q} onChange={setQ} placeholder="Search outlet" width="w-full" light />
             </div>
             <DlgTable
+              footer={<Pager {...regionOutletsPage} onPage={regionOutletsPage.setPage} />}
               head={
                 <tr>
                   <th className={dlgTh}>Outlet</th>
@@ -1013,7 +1021,7 @@ function DrillDialog({
               {filteredRegionOutlets.length === 0 && (
                 <tr><td colSpan={6} className="px-3 py-8 text-center text-sm text-gray-400 dark:text-gray-500">No outlets match “{q}”.</td></tr>
               )}
-              {filteredRegionOutlets.map((o) => (
+              {regionOutletsPage.pageRows.map((o) => (
                 <tr key={o.outlet} onClick={() => onOpenOutlet(o.outlet, regionName)} className="cursor-pointer transition-colors hover:bg-gray-50/70 dark:hover:bg-white/[0.03]">
                   <td className={`${dlgTd} font-medium text-gray-900 dark:text-gray-100`}>{o.outlet}</td>
                   <td className={dlgTd}><Pill tone={o.account === "Managed" ? "blue" : "purple"}>{o.account}</Pill></td>
@@ -1072,6 +1080,7 @@ function DrillDialog({
             </p>
             <DlgLabel>Activations</DlgLabel>
             <DlgTable
+              footer={<Pager {...activationPage} onPage={activationPage.setPage} />}
               head={
                 <tr>
                   <th className={dlgTh}>Ref</th>
@@ -1082,7 +1091,7 @@ function DrillDialog({
                 </tr>
               }
             >
-              {activationRows.map((a) => (
+              {activationPage.pageRows.map((a) => (
                 <tr key={a.ref}>
                   <td className={`${dlgTd} font-mono text-xs`}>{a.ref}</td>
                   <td className={`${dlgTd} font-medium text-gray-900 dark:text-gray-100`}>{a.plan}</td>

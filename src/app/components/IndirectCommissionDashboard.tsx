@@ -707,7 +707,7 @@ function StatDetailDialog({
     const s = q.trim().toLowerCase();
     return !s || c.name.toLowerCase().includes(s) || c.partner.toLowerCase().includes(s) || c.cr.toLowerCase().includes(s);
   });
-  const inactivePage = usePaged(inactiveRows, 8, `${open}|${q}`);
+  const inactivePage = usePaged(inactiveRows, 10, `${open}|${q}`);
 
   const titles: Record<string, string> = {
     revenue: "Revenue — Actual vs Target",
@@ -995,8 +995,14 @@ export function IndirectCommissionDashboard({
     return matchesSearch && matchesStatus && matches2ndBill && matchesElig;
   });
 
+  const inactiveSectionRows = D.inactiveCRList.filter((c) => {
+    const q = inactiveSearch.trim().toLowerCase();
+    return !q || c.name.toLowerCase().includes(q) || c.cr.toLowerCase().includes(q) || c.partner.toLowerCase().includes(q);
+  });
+
   const crPage = usePaged(crRows, 10, crSearch);
   const hvPage = usePaged(hvRows, 10, hvSearch + hvStatus);
+  const inactiveSectionPage = usePaged(inactiveSectionRows, 10, inactiveSearch);
   const planPage = usePaged(
     visibleRows,
     10,
@@ -1412,10 +1418,7 @@ export function IndirectCommissionDashboard({
           {/* Inactive CRs — no activation in 24+ months. Controlled by FEATURES.inactiveCRsSection
               (data is always reachable via the "Inactive CRs" tile popup). */}
           {FEATURES.inactiveCRsSection && (() => {
-            const q = inactiveSearch.trim().toLowerCase();
-            const rows = D.inactiveCRList.filter(
-              (c) => !q || c.name.toLowerCase().includes(q) || c.cr.toLowerCase().includes(q) || c.partner.toLowerCase().includes(q),
-            );
+            const rows = inactiveSectionRows;
             return (
               <SectionCard
                 icon={<CalendarOff className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
@@ -1432,7 +1435,7 @@ export function IndirectCommissionDashboard({
                 <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
                   Sample of the {fmtNum(D.inactiveCRs)} CRs with no recorded activation in 24+ months — the accounts to target for re-engagement.
                 </p>
-                <DataTable minWidth={720}>
+                <DataTable minWidth={720} footer={<Pager {...inactiveSectionPage} onPage={inactiveSectionPage.setPage} />}>
                   <HeadRow>
                     <Th>CR</Th>
                     <Th>Company</Th>
@@ -1449,7 +1452,7 @@ export function IndirectCommissionDashboard({
                         </td>
                       </tr>
                     )}
-                    {rows.map((c, i) => (
+                    {inactiveSectionPage.pageRows.map((c, i) => (
                       <Row key={c.cr} i={i}>
                         <td className={td}>
                           <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600 dark:bg-white/[0.06] dark:text-gray-400">
