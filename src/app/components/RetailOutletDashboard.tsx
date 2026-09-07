@@ -447,7 +447,6 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                   ]}
                 />
                 <SearchInput value={rankSearch} onChange={setRankSearch} placeholder="Search outlet / region" />
-                <span className="text-xs text-gray-400 dark:text-gray-500">{rankRows.length} of {D.outletRanking.length}</span>
               </TableTools>
             }
           >
