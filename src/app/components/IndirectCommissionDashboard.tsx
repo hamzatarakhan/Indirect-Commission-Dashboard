@@ -399,17 +399,12 @@ function Pager({
 
 function Th({
   children,
-  align = "left",
 }: {
   children: React.ReactNode;
   align?: "left" | "right";
 }) {
   return (
-    <th
-      className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 ${
-        align === "right" ? "text-right" : "text-left"
-      }`}
-    >
+    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
       {children}
     </th>
   );
@@ -486,7 +481,7 @@ function Pill({
 }
 
 const td = "px-4 py-3 text-sm text-gray-700 dark:text-gray-300";
-const tdR = `${td} text-right`;
+const tdR = `${td} tabular-nums`;
 
 function SearchInput({
   value,
@@ -668,9 +663,9 @@ function DlgTable({
   );
 }
 const dlgTh = "px-3 py-2 text-left font-semibold";
-const dlgThR = "px-3 py-2 text-right font-semibold";
+const dlgThR = "px-3 py-2 text-left font-semibold";
 const dlgTd = "px-3 py-2 text-gray-700 dark:text-gray-300";
-const dlgTdR = "px-3 py-2 text-right tabular-nums text-gray-700 dark:text-gray-300";
+const dlgTdR = "px-3 py-2 text-left tabular-nums text-gray-700 dark:text-gray-300";
 
 function StatDetailDialog({
   open,
@@ -1103,7 +1098,7 @@ export function IndirectCommissionDashboard({
     if (!active || !payload?.length) return null;
     const row = activationByTypeData.find((r) => r.type === label);
     if (!row) return null;
-    const cell = "px-2 py-0.5 text-right tabular-nums";
+    const cell = "px-2 py-0.5 text-left tabular-nums";
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-2.5 text-[11px] shadow-lg dark:border-gray-700 dark:bg-gray-800">
         <p className="mb-1 font-semibold text-gray-900 dark:text-gray-100">{row.type}</p>
@@ -1353,15 +1348,15 @@ export function IndirectCommissionDashboard({
                         <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{c.name}</td>
                         <td className={`${td} text-gray-500 dark:text-gray-400`}>{c.partner}</td>
                         <td className={tdR}>
-                          <div className="flex flex-col items-end">
+                          <div className="flex flex-col items-start">
                             <span className="font-semibold text-emerald-600 dark:text-emerald-400">{fmtOMR(c.revenueActual)}</span>
                             {pc && <Delta current={c.revenueActual} prev={pc.revenueActual} fmt={(n) => fmtOMR(Math.abs(n))} />}
                           </div>
                         </td>
                         <td className={tdR}>{fmtOMR(c.revenueTarget)}</td>
                         <td className={tdR}>
-                          <div className="flex flex-col items-end">
-                            <div className="flex items-center justify-end gap-2">
+                          <div className="flex flex-col items-start">
+                            <div className="flex items-center justify-start gap-2">
                               <span className={`font-semibold ${c.achievement >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-gray-100"}`}>
                                 {c.achievement}%
                               </span>
@@ -1371,7 +1366,7 @@ export function IndirectCommissionDashboard({
                           </div>
                         </td>
                         <td className={tdR}>
-                          <div className="flex flex-col items-end">
+                          <div className="flex flex-col items-start">
                             <span>
                               <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(c.activations)}</span>
                               <span className="ml-1 text-[10px] text-gray-400 dark:text-gray-500">
@@ -1392,7 +1387,7 @@ export function IndirectCommissionDashboard({
                           Total ({crRows.length} CRs)
                         </td>
                         <td className={tdR}>
-                          <div className="flex flex-col items-end">
+                          <div className="flex flex-col items-start">
                             <span className="font-bold text-emerald-600 dark:text-emerald-400">{fmtOMR(tRevA)}</span>
                             {P && <Delta current={tRevA} prev={pRevA} fmt={(n) => fmtOMR(Math.abs(n))} />}
                           </div>
@@ -1400,7 +1395,7 @@ export function IndirectCommissionDashboard({
                         <td className={`${tdR} font-semibold`}>{fmtOMR(tRevT)}</td>
                         <td className={`${tdR} font-bold`}>{clampAch((tRevA / tRevT) * 100)}%</td>
                         <td className={tdR}>
-                          <div className="flex flex-col items-end">
+                          <div className="flex flex-col items-start">
                             <span className="font-bold text-gray-900 dark:text-gray-100">{fmtNum(tAct)}</span>
                             {P && <Delta current={tAct} prev={pAct} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} />}
                           </div>
@@ -1570,7 +1565,7 @@ export function IndirectCommissionDashboard({
                         <span className="w-2.5 h-2.5 rounded-full" style={{ background: r.color }} />
                         <span className="text-gray-700 dark:text-gray-300">{r.name}</span>
                       </span>
-                      <span className="flex flex-col items-end">
+                      <span className="flex flex-col items-start">
                         <span className="whitespace-nowrap">
                           <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtOMR(r.value)}</span>
                           <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">{r.pct.toFixed(1)}%</span>
@@ -1640,7 +1635,7 @@ export function IndirectCommissionDashboard({
                           <Pill tone={r.segment === "Base" ? "blue" : "purple"}>{r.segment}</Pill>
                         </td>
                         <td className={tdR}>
-                          <div className="flex flex-col items-end gap-0.5">
+                          <div className="flex flex-col items-start gap-0.5">
                             <div className="flex items-center gap-2.5">
                               <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(r.count)}</span>
                               <MiniBar value={r.count} max={maxCount} />
@@ -1649,7 +1644,7 @@ export function IndirectCommissionDashboard({
                           </div>
                         </td>
                         <td className={tdR}>
-                          <div className="flex flex-col items-end">
+                          <div className="flex flex-col items-start">
                             <span className="font-semibold text-emerald-600 dark:text-emerald-400">{fmtOMR(r.revenue)}</span>
                             {pr && <Delta current={r.revenue} prev={pr.revenue} fmt={(n) => fmtOMR(Math.abs(n))} />}
                           </div>
@@ -1967,7 +1962,7 @@ export function IndirectCommissionDashboard({
                     </td>
                     <td className={tdR}>{r.weight}%</td>
                     <td className={tdR}>
-                      <div className="flex flex-col items-end">
+                      <div className="flex flex-col items-start">
                         <div className="flex items-center gap-2">
                           <span className={`font-semibold ${r.achievement >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-gray-100"}`}>
                             {r.achievement}%
@@ -1978,14 +1973,14 @@ export function IndirectCommissionDashboard({
                       </div>
                     </td>
                     <td className={tdR}>
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-start gap-2">
                         <span className="text-gray-700 dark:text-gray-300">{r.eligibleAchievement}%</span>
                         <MiniBar value={r.eligibleAchievement} tone="blue" />
                       </div>
                     </td>
                     <td className={tdR}>{r.commissionPct}%</td>
                     <td className={`${tdR} font-semibold text-emerald-600 dark:text-emerald-400`}>
-                      <div className="flex flex-col items-end">
+                      <div className="flex flex-col items-start">
                         <span>{fmtOMR(r.commissionPaid)}</span>
                         {pr && <Delta current={r.commissionPaid} prev={pr.commissionPaid} fmt={(n) => fmtOMR(Math.abs(n))} />}
                       </div>

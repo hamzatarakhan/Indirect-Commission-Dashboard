@@ -179,8 +179,8 @@ function Pager({ page, pageCount, from, to, total, onPage }: { page: number; pag
   );
 }
 
-function Th({ children, align = "left" }: { children: React.ReactNode; align?: "left" | "right" }) {
-  return <th className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 ${align === "right" ? "text-right" : "text-left"}`}>{children}</th>;
+function Th({ children }: { children: React.ReactNode; align?: "left" | "right" }) {
+  return <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{children}</th>;
 }
 function HeadRow({ children }: { children: React.ReactNode }) {
   return <thead><tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700/60 dark:bg-white/[0.03]">{children}</tr></thead>;
@@ -199,7 +199,7 @@ function Row({ children, i = 0, onClick }: { children: React.ReactNode; i?: numb
   );
 }
 const td = "px-4 py-3 text-sm text-gray-700 dark:text-gray-300";
-const tdR = `${td} text-right`;
+const tdR = `${td} tabular-nums`;
 
 function MiniBar({ value, max = 100, tone = "blue" }: { value: number; max?: number; tone?: "blue" | "green" | "amber" | "red" }) {
   const pct = Math.max(2, Math.min(100, (value / max) * 100));
@@ -310,9 +310,9 @@ function DlgTable({ head, children, footer }: { head: React.ReactNode; children:
   );
 }
 const dlgTh = "px-3 py-2 text-left font-semibold";
-const dlgThR = "px-3 py-2 text-right font-semibold";
+const dlgThR = "px-3 py-2 text-left font-semibold";
 const dlgTd = "px-3 py-2 text-gray-700 dark:text-gray-300";
-const dlgTdR = "px-3 py-2 text-right tabular-nums text-gray-700 dark:text-gray-300";
+const dlgTdR = "px-3 py-2 text-left tabular-nums text-gray-700 dark:text-gray-300";
 
 // Tiny inline trend line for table cells.
 function Sparkline({ points, tone = "#3b82f6" }: { points: number[]; tone?: string }) {
@@ -474,7 +474,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                     <td className={td}><Pill tone={o.account === "Managed" ? "blue" : "purple"}>{o.account}</Pill></td>
                     <td className={tdR}>{fmtNum(o.staff)}</td>
                     <td className={tdR}>
-                      <div className="flex items-center justify-end gap-2.5">
+                      <div className="flex items-center justify-start gap-2.5">
                         <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(o.activations)}</span>
                         <MiniBar value={o.activations} max={rankMax} />
                       </div>
@@ -611,7 +611,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                       <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{rg.region}</td>
                       <td className={tdR}>{fmtNum(rg.outlets)}</td>
                       <td className={tdR}>
-                        <div className="flex items-center justify-end gap-2.5">
+                        <div className="flex items-center justify-start gap-2.5">
                           <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(rg.activations)}</span>
                           <MiniBar value={rg.share} max={Math.max(1, ...D.regionPerformance.map((x) => x.share))} tone="green" />
                         </div>
@@ -639,7 +639,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                       <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{o.outlet}</td>
                       <td className={`${td} text-gray-500 dark:text-gray-400`}>{o.region}</td>
                       <td className={tdR}>
-                        <div className="flex items-center justify-end gap-2.5">
+                        <div className="flex items-center justify-start gap-2.5">
                           <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(o.activations)}</span>
                           <MiniBar value={o.activations} max={rankMax} />
                         </div>
@@ -744,7 +744,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                       <td className={tdR}>{fmtNum(p.staffCount)}</td>
                       <td className={tdR}>{fmtOMR(p.avgPerStaff)}</td>
                       <td className={tdR}>
-                        <div className="flex items-center justify-end gap-2.5">
+                        <div className="flex items-center justify-start gap-2.5">
                           <span>{p.contributionPct.toFixed(1)}%</span>
                           <MiniBar value={p.contributionPct} max={Math.max(1, ...D.commissionByPlan.map((x) => x.contributionPct))} />
                         </div>
@@ -796,7 +796,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                       <td className={tdR}>{fmtNum(o.staffCount)}</td>
                       <td className={tdR}>{fmtOMR(o.avgPerStaff)}</td>
                       <td className={tdR}>
-                        <div className="flex items-center justify-end gap-2.5">
+                        <div className="flex items-center justify-start gap-2.5">
                           <span>{o.contributionPct.toFixed(1)}%</span>
                           <MiniBar value={o.contributionPct} max={Math.max(1, ...D.commissionByOutlet.map((x) => x.contributionPct))} />
                         </div>
