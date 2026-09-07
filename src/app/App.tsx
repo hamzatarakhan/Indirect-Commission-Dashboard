@@ -12,6 +12,7 @@ import { CompanyPerformance } from "./components/CompanyPerformance";
 import { CompaniesPerformance } from "./components/CompaniesPerformance";
 import { PerformanceDashboard } from "./components/PerformanceDashboard";
 import { IndirectCommissionDashboard } from "./components/IndirectCommissionDashboard";
+import { RetailOutletDashboard } from "./components/RetailOutletDashboard";
 import { ServiceDetailsPage } from "./components/ServiceDetailsPage";
 import { CompanyDetailsPage } from "./components/CompanyDetailsPage";
 import { ActivationDetailsPage } from "./components/ActivationDetailsPage";
@@ -199,7 +200,7 @@ export default function App() {
   const [year, setYear] = useState("2024");
   const [showCaretaker, setShowCaretaker] = useState(false);
   const [selectedVertical, setSelectedVertical] = useState<string | null>(null);
-  const [activeDashboard, setActiveDashboard] = useState<'commission' | 'performance' | 'indirect-commission'>('indirect-commission');
+  const [activeDashboard, setActiveDashboard] = useState<'commission' | 'performance' | 'indirect-commission' | 'retail-outlet'>('indirect-commission');
 
   // Service Details Page navigation
   interface ServiceDetailsState {
@@ -1240,6 +1241,7 @@ export default function App() {
             onNavigateToIndirectCommission={() => {
               setActiveDashboard(activeDashboard === 'indirect-commission' ? 'performance' : 'indirect-commission');
             }}
+            onSelectDashboard={(d) => setActiveDashboard(d)}
             comparisonMode={comparisonMode}
             setComparisonMode={setComparisonMode}
             comparisonPeriod={comparisonPeriod}
@@ -1532,6 +1534,8 @@ export default function App() {
               comparisonQuarter={comparisonQuarter}
               comparisonYear={comparisonYear}
             />
+          ) : activeDashboard === 'retail-outlet' ? (
+            <RetailOutletDashboard period={period} quarter={quarter} year={year} />
           ) : activeDashboard === 'performance' ? (
             <PerformanceDashboard
               period={period}

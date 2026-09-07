@@ -33,7 +33,8 @@ interface DashboardHeaderProps {
   onNavigateToPerformance?: () => void; // Navigate to performance dashboard
   onNavigateToCommission?: () => void; // Navigate to commission dashboard
   onNavigateToIndirectCommission?: () => void; // Toggle Indirect Commission dashboard
-  activeDashboard?: 'commission' | 'performance' | 'indirect-commission'; // Current active dashboard
+  onSelectDashboard?: (d: 'commission' | 'performance' | 'indirect-commission' | 'retail-outlet') => void;
+  activeDashboard?: 'commission' | 'performance' | 'indirect-commission' | 'retail-outlet'; // Current active dashboard
   // Comparison props
   comparisonMode?: boolean;
   setComparisonMode?: (enabled: boolean) => void;
@@ -75,6 +76,7 @@ export function DashboardHeader({
   onNavigateToPerformance,
   onNavigateToCommission,
   onNavigateToIndirectCommission,
+  onSelectDashboard,
   activeDashboard = 'commission',
   comparisonMode = false,
   setComparisonMode = () => {},
@@ -222,13 +224,29 @@ export function DashboardHeader({
                       ? 'Commission Dashboard'
                       : activeDashboard === 'indirect-commission'
                       ? 'Indirect Commission Dashboard'
+                      : activeDashboard === 'retail-outlet'
+                      ? 'Retail Outlet Performance & Commission'
                       : 'Performance Dashboard'}
                   </span>
                   <span className="sm:hidden">EBU Dashboard</span>
                 </h1>
+
+                {onSelectDashboard && (
+                  <select
+                    aria-label="Switch dashboard"
+                    value={activeDashboard}
+                    onChange={(e) => onSelectDashboard(e.target.value as any)}
+                    className="ml-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 dark:border-gray-700/60 dark:bg-[#07112F] dark:text-gray-300"
+                  >
+                    <option value="performance">Performance</option>
+                    <option value="commission">Commission</option>
+                    <option value="indirect-commission">Indirect Commission</option>
+                    <option value="retail-outlet">Retail Outlet</option>
+                  </select>
+                )}
                 
                 {/* Global Filter Badges - Show on main dashboard and service details */}
-                {activeDashboard !== 'indirect-commission' && !viewingAsSM && !viewingAsVM && !viewingAsKAM && (
+                {activeDashboard !== 'indirect-commission' && activeDashboard !== 'retail-outlet' && !viewingAsSM && !viewingAsVM && !viewingAsKAM && (
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs sm:text-sm">
                     {/* Display all selected segments */}
                     {selectedSegments.map((segment, idx) => (
