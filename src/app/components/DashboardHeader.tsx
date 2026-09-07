@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Search, Briefcase, BarChart3, GitCompare, Info, DollarSign, Handshake } from 'lucide-react';
+import { ChevronDown, Search, Briefcase, BarChart3, GitCompare, Info, DollarSign, Handshake, Store, Building2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -231,19 +231,6 @@ export function DashboardHeader({
                   <span className="sm:hidden">EBU Dashboard</span>
                 </h1>
 
-                {onSelectDashboard && (
-                  <select
-                    aria-label="Switch dashboard"
-                    value={activeDashboard}
-                    onChange={(e) => onSelectDashboard(e.target.value as any)}
-                    className="ml-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 dark:border-gray-700/60 dark:bg-[#07112F] dark:text-gray-300"
-                  >
-                    <option value="performance">Performance</option>
-                    <option value="commission">Commission</option>
-                    <option value="indirect-commission">Indirect Commission</option>
-                    <option value="retail-outlet">Retail Outlet</option>
-                  </select>
-                )}
                 
                 {/* Global Filter Badges - Show on main dashboard and service details */}
                 {activeDashboard !== 'indirect-commission' && activeDashboard !== 'retail-outlet' && !viewingAsSM && !viewingAsVM && !viewingAsKAM && (
@@ -605,6 +592,30 @@ export function DashboardHeader({
                 </span>
               )}
               
+              {onSelectDashboard && (activeDashboard === 'retail-outlet' || activeDashboard === 'indirect-commission') && (() => {
+                const goingToRetail = activeDashboard === 'indirect-commission';
+                return (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => onSelectDashboard(goingToRetail ? 'retail-outlet' : 'indirect-commission')}
+                          variant="outline"
+                          size="sm"
+                          aria-label={goingToRetail ? 'Switch to Retail Outlet dashboard' : 'Switch to Indirect Commission dashboard'}
+                          className="h-full min-h-[2.25rem] w-9 p-0 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 hover:border-blue-300 dark:hover:border-blue-700/60 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-all duration-300 flex-shrink-0"
+                        >
+                          {goingToRetail ? <Store className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{goingToRetail ? 'Switch to Retail Outlet' : 'Switch to Indirect Commission'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              })()}
+
               <DarkModeToggle className="h-full min-h-[2.25rem] w-9" />
             </div>
           </div>
