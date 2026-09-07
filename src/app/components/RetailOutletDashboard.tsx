@@ -881,22 +881,29 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
             const payout = stages[stages.length - 1];
             const toPayout = daysUntil(payout.date);
             const trackPct = ((doneCount + (current ? 0.5 : 0)) / stages.length) * 100;
+            const cmAchvPct = cmActs
+              ? Math.round(D.commissionByPlan.reduce((s, p) => s + p.achievementPct * p.activations, 0) / cmActs)
+              : 0;
             return (
               <SectionCard
                 icon={<Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
-                title="Commission Cycle Status"
+                title="Commission Approval Status"
                 action={
                   <TableTools>
-                    <Pill tone={current ? "blue" : "green"}>{current ? "In progress" : "Complete"}</Pill>
+                    <Pill tone={current ? "blue" : "green"}>{current ? `Awaiting ${current.label}` : "Approved"}</Pill>
                     <span className="text-xs text-gray-400 dark:text-gray-500">Payout {toPayout > 0 ? `in ${toPayout} days` : "due"}</span>
                   </TableTools>
                 }
               >
-                <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
+                  Commission performance for the cycle and where it stands in the approval flow.
+                </p>
+                <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {[
-                    { k: "Cycle", v: D.commissionCycle.period },
-                    { k: "Stages complete", v: `${doneCount} of ${stages.length}` },
-                    { k: "Scheduled payout", v: fmtOMR(D.commissionCycle.payoutAmount), sub: fmtDay(payout.date) },
+                    { k: "Cycle", v: D.commissionCycle.period, sub: `${doneCount} of ${stages.length} steps` },
+                    { k: "Achievement", v: `${cmAchvPct}%` },
+                    { k: "Eligible activations", v: fmtNum(cmEligible), sub: `of ${fmtNum(cmActs)}` },
+                    { k: "Commission to pay", v: fmtOMR(D.paidTotal), sub: fmtDay(payout.date) },
                   ].map((x) => (
                     <div key={x.k} className="rounded-lg border border-gray-200/70 bg-gray-50/60 p-3 dark:border-gray-700/60 dark:bg-white/[0.03]">
                       <p className="text-[11px] text-gray-500 dark:text-gray-400">{x.k}</p>

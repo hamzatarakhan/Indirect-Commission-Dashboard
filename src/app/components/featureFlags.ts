@@ -32,10 +32,11 @@ export const FEATURES = {
   inactiveCRsSection: false,
 
   /**
-   * "Commission Cycle Status" section (stepper + summary strip).
-   * NOTE: this maps to requirement 2.2 — it should be `true` for final delivery.
+   * "Commission Approval Status" section (approval-flow stepper + performance
+   * strip). Maps to requirement 2.2. Client (Sept 2026) confirmed the intent:
+   * "commission performance with status of approval flow".
    */
-  commissionCycleStatus: false,
+  commissionCycleStatus: true,
 
   /**
    * "Avg / Activation" column (Revenue ÷ Activations) in the Activation Type
@@ -44,10 +45,9 @@ export const FEATURES = {
   activationTypeAvgColumn: false,
 
   /**
-   * Retail Outlet dashboard → Commission tab → "Commission Cycle Status" section
-   * (5-step stepper + summary strip). Maps to the Retail brief's "Commission
-   * Cycle Status" — flip to `true` for final delivery. Mirrors
+   * Retail Outlet dashboard → Commission tab → "Commission Approval Status"
+   * section (approval-flow stepper + performance strip). Mirrors
    * `commissionCycleStatus` on the Indirect dashboard.
    */
-  retailCommissionCycleStatus: false,
+  retailCommissionCycleStatus: true,
 } as const;

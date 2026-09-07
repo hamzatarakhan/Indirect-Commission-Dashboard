@@ -2093,13 +2093,19 @@ export function IndirectCommissionDashboard({
             const payout = stages[stages.length - 1];
             const toPayout = daysUntil(payout.date);
             const trackPct = ((doneCount + (current ? 0.5 : 0)) / stages.length) * 100;
+            const ccAct = D.planRows.reduce((s, p) => s + p.activations, 0);
+            const ccElig = D.planRows.reduce((s, p) => s + p.eligibleActivations, 0);
+            const ccWeight = D.planRows.reduce((s, p) => s + p.weight, 0);
+            const ccAchv = ccWeight
+              ? Math.round(D.planRows.reduce((s, p) => s + p.eligibleAchievement * p.weight, 0) / ccWeight)
+              : 0;
             return (
               <SectionCard
                 icon={<Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
-                title="Commission Cycle Status"
+                title="Commission Approval Status"
                 action={
                   <TableTools>
-                    <Pill tone={current ? "blue" : "green"}>{current ? "In progress" : "Complete"}</Pill>
+                    <Pill tone={current ? "blue" : "green"}>{current ? `Awaiting ${current.label}` : "Approved"}</Pill>
                     <span className="text-xs text-gray-400 dark:text-gray-500">
                       Payout {toPayout > 0 ? `in ${toPayout} days` : "due"}
                     </span>
@@ -2111,13 +2117,17 @@ export function IndirectCommissionDashboard({
                     Live status of the current cycle — not a period-over-period comparison.
                   </p>
                 )}
-                {/* Summary strip */}
-                <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
+                  Commission performance for the cycle and where it stands in the approval flow.
+                </p>
+                {/* Performance + approval strip */}
+                <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {[
-                    { k: "Cycle", v: D.commissionCycle.period },
-                    { k: "Stages complete", v: `${doneCount} of ${stages.length}` },
+                    { k: "Cycle", v: D.commissionCycle.period, sub: `${doneCount} of ${stages.length} steps` },
+                    { k: "Eligible achievement", v: `${ccAchv}%` },
+                    { k: "Eligible activations", v: fmtNum(ccElig), sub: `of ${fmtNum(ccAct)}` },
                     {
-                      k: "Scheduled payout",
+                      k: "Commission to pay",
                       v: fmtOMR(D.commissionCycle.payoutAmount),
                       sub: fmtDay(payout.date),
                     },
