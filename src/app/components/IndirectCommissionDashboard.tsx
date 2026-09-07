@@ -1148,6 +1148,37 @@ export function IndirectCommissionDashboard({
         </div>
       )}
 
+      {/* ===== filter card (applies across both tabs) ===== */}
+      <div className={`${cardShell} p-4`}>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+          <Field label="Partner">
+            <Select value={partner} onValueChange={setPartner}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PARTNERS.map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="Commission Plan">
+            <Select value={planFilter} onValueChange={setPlanFilter}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Plans">All Plans</SelectItem>
+                {COMMISSION_PLANS.map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
+      </div>
+
       <Tabs defaultValue="performance" className="space-y-3">
         <TabsList className="inline-flex h-auto gap-1 rounded-xl border border-slate-200 bg-white p-1 dark:border-gray-700/60 dark:bg-[#07112F]">
           {["performance", "commission"].map((v) => (
@@ -1860,37 +1891,6 @@ export function IndirectCommissionDashboard({
 
         {/* ================= COMMISSION ================= */}
         <TabsContent value="commission" className="space-y-6">
-          {/* Commission filters */}
-          <div className={`${cardShell} p-4`}>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-              <Field label="Partner">
-                <Select value={partner} onValueChange={setPartner}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PARTNERS.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Commission Plan">
-                <Select value={planFilter} onValueChange={setPlanFilter}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All Plans">All Plans</SelectItem>
-                    {COMMISSION_PLANS.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-          </div>
-
           {/* Achievement vs Payout by Plan */}
           <SectionCard
             icon={<Wallet className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
