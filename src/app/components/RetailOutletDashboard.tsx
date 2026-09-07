@@ -381,7 +381,6 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
 
   const overviewRegionPage = usePaged(D.regionPerformance, 10, D);
   const overviewOutletPage = usePaged(D.outletRanking, 10, D);
-  const targetPage = usePaged(D.targetView.rows, 10, D);
   const commOutletPage = usePaged(D.commissionByOutlet, 10, D);
 
   const planChartData = D.activationsByPlan.map((p) => ({ ...p, short: p.plan.replace("Retail ", "") }));
@@ -663,7 +662,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
             <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-800/50 dark:bg-amber-900/20 dark:text-amber-200">
               {D.targetView.note}
             </div>
-            <DataTable minWidth={760} footer={<Pager {...targetPage} onPage={targetPage.setPage} />}>
+            <DataTable minWidth={760}>
               <HeadRow>
                 <Th>Outlet</Th>
                 <Th>Region</Th>
@@ -675,7 +674,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                 <Th align="right">Rank</Th>
               </HeadRow>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
-                {targetPage.pageRows.map((rw, i) => (
+                {D.targetView.rows.map((rw, i) => (
                   <Row key={rw.scope} i={i}>
                     <td className={`${td} font-medium text-gray-900 dark:text-gray-100`}>{rw.scope}</td>
                     <td className={`${td} text-gray-500 dark:text-gray-400`}>{rw.region}</td>
