@@ -590,6 +590,53 @@ export function RetailOutletDashboard({ period, quarter, month, year }: Props) {
             </DataTable>
           </SectionCard>
 
+          {/* Activations by Product Plan (product plan rolls up to its commission plan) */}
+          <SectionCard icon={<Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />} title="Activations by Product Plan">
+            <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
+              Each product plan rolls up to its commission plan. Product-plan names are placeholders pending the confirmed list.
+            </p>
+            <DataTable minWidth={640}>
+              <HeadRow>
+                <Th>Commission Plan / Product Plan</Th>
+                <Th align="right">Activations</Th>
+                <Th align="right">Eligible</Th>
+                <Th align="right">Share of Plan</Th>
+                <Th align="right">Share of Total</Th>
+              </HeadRow>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
+                {D.productPlanGroups.map((g) => (
+                  <React.Fragment key={g.commissionPlan}>
+                    <tr className="bg-gray-50 dark:bg-white/[0.04]">
+                      <td className={`${td} font-semibold text-gray-900 dark:text-gray-100`}>{g.commissionPlan}</td>
+                      <td className={`${tdR} font-semibold text-gray-900 dark:text-gray-100`}>{fmtNum(g.activations)}</td>
+                      <td className={`${tdR} font-semibold text-gray-700 dark:text-gray-200`}>{fmtNum(g.eligible)}</td>
+                      <td className={`${tdR} text-gray-400 dark:text-gray-500`}>—</td>
+                      <td className={`${tdR} font-semibold text-gray-700 dark:text-gray-200`}>{g.shareTotal.toFixed(1)}%</td>
+                    </tr>
+                    {g.products.map((pp) => (
+                      <tr key={pp.productPlan} className="transition-colors hover:bg-gray-50/70 dark:hover:bg-white/[0.03]">
+                        <td className={`${td} pl-9 text-gray-600 dark:text-gray-300`}>{pp.productPlan}</td>
+                        <td className={tdR}>{fmtNum(pp.activations)}</td>
+                        <td className={tdR}>{fmtNum(pp.eligible)}</td>
+                        <td className={tdR}>{pp.sharePlan.toFixed(1)}%</td>
+                        <td className={tdR}>{pp.shareTotal.toFixed(1)}%</td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </tbody>
+              <tfoot className="border-t-2 border-gray-200 bg-white font-semibold text-gray-900 dark:border-gray-700 dark:bg-[#07112F] dark:text-gray-100">
+                <tr>
+                  <td className={td}>Total</td>
+                  <td className={tdR}>{fmtNum(D.productPlanGroups.reduce((s, g) => s + g.activations, 0))}</td>
+                  <td className={tdR}>{fmtNum(D.productPlanGroups.reduce((s, g) => s + g.eligible, 0))}</td>
+                  <td className={tdR} />
+                  <td className={tdR}>100%</td>
+                </tr>
+              </tfoot>
+            </DataTable>
+          </SectionCard>
+
           {/* Performance Overview — Region / Outlet */}
           <SectionCard
             icon={<MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />}

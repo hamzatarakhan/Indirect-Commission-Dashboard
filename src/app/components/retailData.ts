@@ -76,6 +76,29 @@ const PLAN_MIX: Record<string, number> = {
   "Retail Fixed Activations": 0.11,
 };
 
+// Product plans sit UNDER a commission plan (parent → children). `mix` is the
+// product plan's share of its parent commission plan's activations (sums ~1).
+// NOTE: placeholder categories — replace with Omantel's real product-plan list.
+const PRODUCT_PLANS: Record<string, { name: string; mix: number }[]> = {
+  "Retail Mobile Activations": [
+    { name: "Prepaid", mix: 0.52 },
+    { name: "Postpaid (Baqati)", mix: 0.34 },
+    { name: "Data-only SIM", mix: 0.14 },
+  ],
+  "Retail A'amali": [
+    { name: "A'amali Starter", mix: 0.6 },
+    { name: "A'amali Pro", mix: 0.4 },
+  ],
+  "Retail Upgrade": [
+    { name: "Handset Upgrade", mix: 0.63 },
+    { name: "Plan Upgrade", mix: 0.37 },
+  ],
+  "Retail Fixed Activations": [
+    { name: "Fibre Broadband", mix: 0.71 },
+    { name: "Fixed Voice", mix: 0.29 },
+  ],
+};
+
 // Commission rate & eligibility per plan.
 const PLAN_MODEL: Record<
   string,
@@ -268,6 +291,31 @@ export function getRetailData(f: RetailFilters) {
     };
   });
 
+  // ---- activations by product plan (product plan = sub of commission plan) ----
+  const productPlanGroups = activationPerfByPlan.map((cp) => {
+    const defs = PRODUCT_PLANS[cp.plan] ?? [{ name: cp.plan, mix: 1 }];
+    const products = defs.map((pp) => {
+      const acts = r(cp.activations * pp.mix);
+      return {
+        productPlan: pp.name,
+        commissionPlan: cp.plan,
+        activations: acts,
+        eligible: r(acts * PLAN_MODEL[cp.plan].eligibleRate),
+        sharePlan: cp.activations ? (acts / cp.activations) * 100 : 0,
+        shareTotal: totalActivations ? (acts / totalActivations) * 100 : 0,
+        momPct: (PLAN_MOM[cp.plan] ?? 0) + (pp.name.length % 5) - 2,
+        trend: spark(acts, cp.plan.length + pp.name.length),
+      };
+    });
+    return {
+      commissionPlan: cp.plan,
+      activations: cp.activations,
+      eligible: cp.eligible,
+      shareTotal: cp.share,
+      products,
+    };
+  });
+
   // ---- region performance ----
   const byRegion = new Map<string, { activations: number; outlets: number }>();
   for (const o of outletActs) {
@@ -426,6 +474,7 @@ export function getRetailData(f: RetailFilters) {
     outletRanking,
     activationsByPlan,
     activationPerfByPlan,
+    productPlanGroups,
     regionPerformance,
     monthlyTrend,
     targetView,
