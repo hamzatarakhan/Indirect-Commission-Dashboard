@@ -12,6 +12,7 @@ import {
   Search,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   XCircle,
   ArrowUp,
   ArrowDown,
@@ -360,6 +361,14 @@ export function RetailOutletDashboard({ period, quarter, month, year }: Props) {
   const [rankScope, setRankScope] = React.useState<"all" | "Managed" | "Unmanaged">("all");
   const [overviewLevel, setOverviewLevel] = React.useState<"region" | "outlet">("region");
   const [commLevel, setCommLevel] = React.useState<"plan" | "outlet">("plan");
+  const [openPlans, setOpenPlans] = React.useState<Set<string>>(() => new Set(RETAIL_PLANS));
+  const togglePlan = (p: string) =>
+    setOpenPlans((prev) => {
+      const next = new Set(prev);
+      if (next.has(p)) next.delete(p);
+      else next.add(p);
+      return next;
+    });
   const [drillStack, setDrillStack] = React.useState<Exclude<Drill, null>[]>([]);
   const drill = drillStack[drillStack.length - 1] ?? null;
   const openDrill = (d: Exclude<Drill, null>) => setDrillStack([d]);
@@ -591,9 +600,23 @@ export function RetailOutletDashboard({ period, quarter, month, year }: Props) {
           </SectionCard>
 
           {/* Activations by Product Plan (product plan rolls up to its commission plan) */}
-          <SectionCard icon={<Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />} title="Activations by Product Plan">
+          <SectionCard
+            icon={<Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+            title="Activations by Product Plan"
+            action={
+              <TableTools>
+                <button
+                  type="button"
+                  onClick={() => setOpenPlans((prev) => (prev.size ? new Set() : new Set(RETAIL_PLANS)))}
+                  className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  {openPlans.size ? "Collapse all" : "Expand all"}
+                </button>
+              </TableTools>
+            }
+          >
             <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
-              Each product plan rolls up to its commission plan. Product-plan names are placeholders pending the confirmed list.
+              Each product plan rolls up to its commission plan — tap a commission plan to expand. Product-plan names are placeholders pending the confirmed list.
             </p>
             <DataTable minWidth={640}>
               <HeadRow>
@@ -604,26 +627,45 @@ export function RetailOutletDashboard({ period, quarter, month, year }: Props) {
                 <Th align="right">Share of Total</Th>
               </HeadRow>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
-                {D.productPlanGroups.map((g) => (
-                  <React.Fragment key={g.commissionPlan}>
-                    <tr className="bg-gray-50 dark:bg-white/[0.04]">
-                      <td className={`${td} font-semibold text-gray-900 dark:text-gray-100`}>{g.commissionPlan}</td>
-                      <td className={`${tdR} font-semibold text-gray-900 dark:text-gray-100`}>{fmtNum(g.activations)}</td>
-                      <td className={`${tdR} font-semibold text-gray-700 dark:text-gray-200`}>{fmtNum(g.eligible)}</td>
-                      <td className={`${tdR} text-gray-400 dark:text-gray-500`}>—</td>
-                      <td className={`${tdR} font-semibold text-gray-700 dark:text-gray-200`}>{g.shareTotal.toFixed(1)}%</td>
-                    </tr>
-                    {g.products.map((pp) => (
-                      <tr key={pp.productPlan} className="transition-colors hover:bg-gray-50/70 dark:hover:bg-white/[0.03]">
-                        <td className={`${td} pl-9 text-gray-600 dark:text-gray-300`}>{pp.productPlan}</td>
-                        <td className={tdR}>{fmtNum(pp.activations)}</td>
-                        <td className={tdR}>{fmtNum(pp.eligible)}</td>
-                        <td className={tdR}>{pp.sharePlan.toFixed(1)}%</td>
-                        <td className={tdR}>{pp.shareTotal.toFixed(1)}%</td>
+                {D.productPlanGroups.map((g) => {
+                  const open = openPlans.has(g.commissionPlan);
+                  return (
+                    <React.Fragment key={g.commissionPlan}>
+                      <tr
+                        onClick={() => togglePlan(g.commissionPlan)}
+                        className="cursor-pointer bg-gray-50 transition-colors hover:bg-gray-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]"
+                      >
+                        <td className={`${td} font-semibold text-gray-900 dark:text-gray-100`}>
+                          <span className="flex items-center gap-1.5">
+                            {open ? (
+                              <ChevronDown className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
+                            )}
+                            {g.commissionPlan}
+                            <span className="text-[11px] font-normal text-gray-400 dark:text-gray-500">
+                              ({g.products.length})
+                            </span>
+                          </span>
+                        </td>
+                        <td className={`${tdR} font-semibold text-gray-900 dark:text-gray-100`}>{fmtNum(g.activations)}</td>
+                        <td className={`${tdR} font-semibold text-gray-700 dark:text-gray-200`}>{fmtNum(g.eligible)}</td>
+                        <td className={`${tdR} text-gray-400 dark:text-gray-500`}>—</td>
+                        <td className={`${tdR} font-semibold text-gray-700 dark:text-gray-200`}>{g.shareTotal.toFixed(1)}%</td>
                       </tr>
-                    ))}
-                  </React.Fragment>
-                ))}
+                      {open &&
+                        g.products.map((pp) => (
+                          <tr key={pp.productPlan} className="transition-colors hover:bg-gray-50/70 dark:hover:bg-white/[0.03]">
+                            <td className={`${td} pl-9 text-gray-600 dark:text-gray-300`}>{pp.productPlan}</td>
+                            <td className={tdR}>{fmtNum(pp.activations)}</td>
+                            <td className={tdR}>{fmtNum(pp.eligible)}</td>
+                            <td className={tdR}>{pp.sharePlan.toFixed(1)}%</td>
+                            <td className={tdR}>{pp.shareTotal.toFixed(1)}%</td>
+                          </tr>
+                        ))}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
               <tfoot className="border-t-2 border-gray-200 bg-white font-semibold text-gray-900 dark:border-gray-700 dark:bg-[#07112F] dark:text-gray-100">
                 <tr>
