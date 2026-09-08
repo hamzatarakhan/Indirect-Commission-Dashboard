@@ -1529,13 +1529,14 @@ export default function App() {
             <IndirectCommissionDashboard
               period={period}
               quarter={quarter}
+              month={month}
               year={year}
               comparisonMode={comparisonMode}
               comparisonQuarter={comparisonQuarter}
               comparisonYear={comparisonYear}
             />
           ) : activeDashboard === 'retail-outlet' ? (
-            <RetailOutletDashboard period={period} quarter={quarter} year={year} />
+            <RetailOutletDashboard period={period} quarter={quarter} month={month} year={year} />
           ) : activeDashboard === 'performance' ? (
             <PerformanceDashboard
               period={period}

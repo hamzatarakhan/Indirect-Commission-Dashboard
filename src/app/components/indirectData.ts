@@ -34,7 +34,28 @@ export interface IndirectFilters {
   granularity: "Month" | "Quarter" | "Year";
   partner: string;
   quarter: string; // Q1..Q4
+  month: string; // full month name, used when granularity === "Month"
   year: string; // "2024".."2026"
+}
+
+const MONTHS_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS_FULL = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+const QUARTER_MONTHS: Record<string, number[]> = {
+  Q1: [0, 1, 2], Q2: [3, 4, 5], Q3: [6, 7, 8], Q4: [9, 10, 11],
+};
+const monthIndex = (name: string) => Math.max(0, MONTHS_FULL.indexOf(name));
+
+// Time axis for the selected period: 12 months (Year), the quarter's 3 months
+// (Quarter), or the 4 weeks of the selected month (Month).
+function timeAxis(f: IndirectFilters): { unit: "Month" | "Week"; labels: string[] } {
+  if (f.granularity === "Year") return { unit: "Month", labels: MONTHS_ABBR };
+  if (f.granularity === "Quarter") {
+    return { unit: "Month", labels: (QUARTER_MONTHS[f.quarter] ?? QUARTER_MONTHS.Q3).map((i) => MONTHS_ABBR[i]) };
+  }
+  return { unit: "Week", labels: ["Week 1", "Week 2", "Week 3", "Week 4"] };
 }
 
 // ---- deterministic model knobs --------------------------------------------
@@ -60,12 +81,13 @@ const yearVar = (year: string) => 1 + (Number(year) - 2026) * 0.08;
 
 function factors(f: IndirectFilters) {
   const partner = PARTNER_MODEL[f.partner];
+  // Quarter only skews Quarter/Month views; a Year total spans all quarters.
+  const qVar = f.granularity === "Year" ? 1 : QUARTER_VAR[f.quarter] ?? 1;
+  // In Month view, make each month land on a slightly different number.
+  const mVar = f.granularity === "Month" ? 0.86 + (monthIndex(f.month) % 6) * 0.05 : 1;
   const volume =
-    GRANULARITY_FACTOR[f.granularity] *
-    (QUARTER_VAR[f.quarter] ?? 1) *
-    yearVar(f.year) *
-    (partner ? partner.share : 1);
-  const perf = (partner ? partner.bias : 1) * (QUARTER_VAR[f.quarter] ?? 1) ** 0.4;
+    GRANULARITY_FACTOR[f.granularity] * qVar * mVar * yearVar(f.year) * (partner ? partner.share : 1);
+  const perf = (partner ? partner.bias : 1) * qVar ** 0.4;
   return { volume, perf, partnerName: f.partner };
 }
 
@@ -211,10 +233,15 @@ export function getIndirectData(f: IndirectFilters) {
     revenue: scaleV(a.revenue),
   }));
 
-  const netActivationsTrend = BASE.netActivationsTrend.map((m) => ({
-    period: m.period,
-    activations: scaleV(m.activations),
-    terminations: scaleV(m.terminations),
+  // Trend across the selected period — months, or the 4 weeks of a Month view.
+  const axis = timeAxis(f);
+  const naN = axis.labels.length;
+  const naAct = scaleV(BASE.netActivationsTrend.reduce((s, m) => s + m.activations, 0));
+  const naTerm = scaleV(BASE.netActivationsTrend.reduce((s, m) => s + m.terminations, 0));
+  const netActivationsTrend = axis.labels.map((period, i) => ({
+    period,
+    activations: r((naAct / naN) * (0.85 + i * (0.4 / naN)) * (1 + Math.sin(i) * 0.03)),
+    terminations: r((naTerm / naN) * (0.9 + i * (0.2 / naN)) * (1 + Math.cos(i) * 0.04)),
   }));
 
   const terminationsByType = BASE.terminationsByType.map((t) => ({
@@ -311,6 +338,7 @@ export function getIndirectData(f: IndirectFilters) {
     activationByType,
     activationTypeBreakdown,
     netActivationsTrend,
+    axisUnit: axis.unit,
     terminationsByType,
     revenueContribution,
     huntingValidation,

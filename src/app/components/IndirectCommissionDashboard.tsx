@@ -824,7 +824,7 @@ function StatDetailDialog({
               <StatBox label="Terminations" value={fmtNum(D.totalTerminations)} tone="bad" />
               <StatBox label="Net" value={fmtNum(D.netActivations)} sub={`${termRate.toFixed(1)}% churn`} tone="good" />
             </div>
-            <DlgLabel>Monthly trend</DlgLabel>
+            <DlgLabel>{D.axisUnit === "Week" ? "Weekly trend" : "Monthly trend"}</DlgLabel>
             <DlgTable
               head={
                 <tr>
@@ -895,6 +895,7 @@ function StatDetailDialog({
 interface Props {
   period: string;
   quarter: string;
+  month: string;
   year: string;
   comparisonMode?: boolean;
   comparisonQuarter?: string;
@@ -904,6 +905,7 @@ interface Props {
 export function IndirectCommissionDashboard({
   period,
   quarter,
+  month,
   year,
   comparisonMode = false,
   comparisonQuarter = "Q2",
@@ -938,17 +940,17 @@ export function IndirectCommissionDashboard({
 
   // Everything the dashboard renders is derived here from the active filters.
   const D = React.useMemo(
-    () => getIndirectData({ granularity, partner, quarter, year }),
-    [granularity, partner, quarter, year],
+    () => getIndirectData({ granularity, partner, quarter, month, year }),
+    [granularity, partner, quarter, month, year],
   );
 
   // Comparison-period dataset (only used when Compare is on in the header).
   const P = React.useMemo(
     () =>
       comparisonMode
-        ? getIndirectData({ granularity, partner, quarter: comparisonQuarter, year: comparisonYear })
+        ? getIndirectData({ granularity, partner, quarter: comparisonQuarter, month, year: comparisonYear })
         : null,
-    [comparisonMode, granularity, partner, comparisonQuarter, comparisonYear],
+    [comparisonMode, granularity, partner, comparisonQuarter, month, comparisonYear],
   );
 
   const cmpLabel =

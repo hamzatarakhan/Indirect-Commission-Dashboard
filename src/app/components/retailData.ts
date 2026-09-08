@@ -36,6 +36,7 @@ export interface RetailFilters {
   plan: string; // "All Plans" | plan name
   staffType: string; // "All Staff" | "Managed" | "Unmanaged"
   quarter: string; // Q1..Q4
+  month: string; // full month name, e.g. "September" (used when granularity === "Month")
   year: string;
 }
 
@@ -89,7 +90,26 @@ const PLAN_MODEL: Record<
 const QUARTER_VAR: Record<string, number> = { Q1: 0.9, Q2: 0.98, Q3: 1.07, Q4: 1.04 };
 const GRAN: Record<RetailFilters["granularity"], number> = { Month: 0.34, Quarter: 1, Year: 3.9 };
 const yearVar = (y: string) => 1 + (Number(y) - 2026) * 0.07;
-const MONTHS = ["Apr", "May", "Jun", "Jul", "Aug"];
+
+const MONTHS_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS_FULL = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+const QUARTER_MONTHS: Record<string, number[]> = {
+  Q1: [0, 1, 2], Q2: [3, 4, 5], Q3: [6, 7, 8], Q4: [9, 10, 11],
+};
+const monthIndex = (name: string) => Math.max(0, MONTHS_FULL.indexOf(name));
+
+// Time axis for the selected period: 12 months (Year), the quarter's 3 months
+// (Quarter), or the 4 weeks of the selected month (Month).
+function timeAxis(f: RetailFilters): { unit: "Month" | "Week"; labels: string[] } {
+  if (f.granularity === "Year") return { unit: "Month", labels: MONTHS_ABBR };
+  if (f.granularity === "Quarter") {
+    return { unit: "Month", labels: (QUARTER_MONTHS[f.quarter] ?? QUARTER_MONTHS.Q3).map((i) => MONTHS_ABBR[i]) };
+  }
+  return { unit: "Week", labels: ["Week 1", "Week 2", "Week 3", "Week 4"] };
+}
 
 const r = (n: number) => Math.round(n);
 const clampPct = (n: number) => Math.max(0, Math.min(180, Math.round(n)));
@@ -115,7 +135,12 @@ function staffRoster(o: (typeof OUTLETS_BASE)[number], scale: number) {
 // ---- the one entry point ------------------------------------------------
 
 export function getRetailData(f: RetailFilters) {
-  const scale = GRAN[f.granularity] * (QUARTER_VAR[f.quarter] ?? 1) * yearVar(f.year);
+  const axis = timeAxis(f);
+  // Quarter only skews Quarter/Month views; a Year total spans all quarters.
+  const qVar = f.granularity === "Year" ? 1 : QUARTER_VAR[f.quarter] ?? 1;
+  // In Month view, make each month land on a slightly different number.
+  const mVar = f.granularity === "Month" ? 0.86 + (monthIndex(f.month) % 6) * 0.05 : 1;
+  const scale = GRAN[f.granularity] * qVar * mVar * yearVar(f.year);
   const isRegion = f.region !== "All Regions";
   const isOutlet = f.outlet !== "All Outlets";
   const isPlan = f.plan !== "All Plans";
@@ -147,7 +172,9 @@ export function getRetailData(f: RetailFilters) {
 
   // 6-month spark trend for a given total (deterministic, gentle upward drift).
   const spark = (base: number, seed = 0) =>
-    MONTHS.map((_, i) => r((base / MONTHS.length) * (0.78 + i * 0.1) * (1 + Math.sin(i + seed) * 0.05)));
+    axis.labels.map((_, i) =>
+      r((base / axis.labels.length) * (0.78 + i * (0.4 / axis.labels.length)) * (1 + Math.sin(i + seed) * 0.05)),
+    );
 
   // ---- outlet ranking ----
   const outletRanking = [...outletActs]
@@ -212,12 +239,11 @@ export function getRetailData(f: RetailFilters) {
     }))
     .sort((a, b) => b.activations - a.activations);
 
-  // ---- monthly trend ----
-  const monthlyTrend = MONTHS.map((period, i) => ({
+  // ---- trend across the selected period (months, or weeks in Month view) ----
+  const n = axis.labels.length;
+  const monthlyTrend = axis.labels.map((period, i) => ({
     period,
-    activations: r(
-      (totalActivations / MONTHS.length) * (0.82 + i * 0.09) * (1 + Math.sin(i) * 0.04),
-    ),
+    activations: r((totalActivations / n) * (0.82 + i * (0.45 / n)) * (1 + Math.sin(i) * 0.04)),
   }));
 
   // ---- target vs achievement (targets not yet provided) ----
@@ -366,7 +392,8 @@ export function getRetailData(f: RetailFilters) {
     regionPerformance,
     monthlyTrend,
     targetView,
-    months: MONTHS,
+    months: axis.labels,
+    axisUnit: axis.unit,
     commissionByPlan,
     commissionByOutlet,
     achievementVsPayout,

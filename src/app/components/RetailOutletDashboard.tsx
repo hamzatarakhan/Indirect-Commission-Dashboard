@@ -336,6 +336,7 @@ function Sparkline({ points, tone = "#3b82f6" }: { points: number[]; tone?: stri
 interface Props {
   period: string;
   quarter: string;
+  month: string;
   year: string;
 }
 
@@ -346,7 +347,7 @@ type Drill = DrillRegion | DrillOutlet | DrillStaff | null;
 
 const PLAN_COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b"];
 
-export function RetailOutletDashboard({ period, quarter, year }: Props) {
+export function RetailOutletDashboard({ period, quarter, month, year }: Props) {
   const granularity: "Month" | "Quarter" | "Year" = period === "Yearly" ? "Year" : period === "Monthly" ? "Month" : "Quarter";
   const isMobile = useIsMobile();
 
@@ -365,8 +366,8 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
   const pushDrill = (d: Exclude<Drill, null>) => setDrillStack((s) => [...s, d]);
 
   const D: RetailData = React.useMemo(
-    () => getRetailData({ granularity, region, outlet, plan, staffType, quarter, year }),
-    [granularity, region, outlet, plan, staffType, quarter, year],
+    () => getRetailData({ granularity, region, outlet, plan, staffType, quarter, month, year }),
+    [granularity, region, outlet, plan, staffType, quarter, month, year],
   );
 
   // keep the outlet filter valid when region changes
@@ -386,6 +387,8 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
   const overviewRegionPage = usePaged(D.regionPerformance, 10, D);
   const overviewOutletPage = usePaged(D.outletRanking, 10, D);
   const commOutletPage = usePaged(D.commissionByOutlet, 10, D);
+
+  const trendColLabel = `${D.axisUnit === "Week" ? "Weekly" : "Monthly"} Trend`;
 
   const planChartData = D.activationsByPlan.map((p) => ({ ...p, short: p.plan.replace("Retail ", "") }));
   const cmPaidTotal = D.commissionByPlan.reduce((s, p) => s + p.totalPaid, 0);
@@ -520,8 +523,8 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
               </ResponsiveContainer>
             </SectionCard>
 
-            {/* Performance Trend by Month */}
-            <SectionCard icon={<TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />} title="Performance Trend by Month">
+            {/* Performance Trend across the selected period */}
+            <SectionCard icon={<TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />} title={`Performance Trend by ${D.axisUnit}`}>
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={D.monthlyTrend} margin={{ top: 20 }}>
                   <defs>
@@ -549,7 +552,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                 <Th align="right">Eligible</Th>
                 <Th align="right">Share</Th>
                 <Th align="right">MoM</Th>
-                <Th align="right">Monthly Trend</Th>
+                <Th align="right">{trendColLabel}</Th>
               </HeadRow>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
                 {D.activationPerfByPlan.map((p, i) => (
@@ -673,7 +676,7 @@ export function RetailOutletDashboard({ period, quarter, year }: Props) {
                 <Th align="right">Actual Activations</Th>
                 <Th align="right">Achievement %</Th>
                 <Th align="right">Gap to Target</Th>
-                <Th align="right">Monthly Trend</Th>
+                <Th align="right">{trendColLabel}</Th>
                 <Th align="right">Rank</Th>
               </HeadRow>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
