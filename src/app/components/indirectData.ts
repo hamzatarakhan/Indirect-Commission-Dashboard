@@ -58,6 +58,53 @@ function timeAxis(f: IndirectFilters): { unit: "Month" | "Week"; labels: string[
   return { unit: "Week", labels: ["Week 1", "Week 2", "Week 3", "Week 4"] };
 }
 
+// Approval cycle whose stage dates & statuses track the selected period.
+const CYCLE_TODAY = new Date("2026-09-08T00:00:00");
+const CYCLE_STAGE_DEFS = [
+  { label: "Data Cut-off", offset: 0, note: "Activation & billing data frozen" },
+  { label: "Calculation", offset: 1, note: "Achievement & commission computed for all 10 plans" },
+  { label: "Validation (2nd Bill)", offset: 8, note: "Confirming hunting activations against 2nd bill / payment" },
+  { label: "Approval", offset: 12, note: "Finance sign-off on payout schedule" },
+  { label: "Payout", offset: 18, note: "Commission released to partner accounts" },
+];
+function periodEndDate(f: IndirectFilters) {
+  const y = Number(f.year) || 2026;
+  if (f.granularity === "Year") return new Date(y, 11, 31);
+  if (f.granularity === "Month") return new Date(y, monthIndex(f.month) + 1, 0);
+  const qm = QUARTER_MONTHS[f.quarter] ?? QUARTER_MONTHS.Q3;
+  return new Date(y, qm[2] + 1, 0);
+}
+function buildCycle(f: IndirectFilters, payoutAmount: number, validationDone: number, validationTotal: number) {
+  const end = periodEndDate(f);
+  const started = end <= CYCLE_TODAY;
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  let currentTaken = false;
+  const stages = CYCLE_STAGE_DEFS.map((s) => {
+    const d = new Date(end);
+    d.setDate(d.getDate() + s.offset);
+    let status: "done" | "current" | "upcoming";
+    if (d < CYCLE_TODAY) status = "done";
+    else if (started && !currentTaken) {
+      status = "current";
+      currentTaken = true;
+    } else status = "upcoming";
+    const row = { label: s.label, date: iso(d), status, note: s.note };
+    return status === "current" && s.label.startsWith("Validation")
+      ? { ...row, progress: { done: validationDone, total: validationTotal, unit: "activations checked" } }
+      : row;
+  });
+  return {
+    period:
+      f.granularity === "Year"
+        ? String(f.year)
+        : f.granularity === "Month"
+          ? `${f.month} ${f.year}`
+          : `${f.quarter} ${f.year}`,
+    payoutAmount,
+    stages,
+  };
+}
+
 // ---- deterministic model knobs --------------------------------------------
 
 // Share of channel volume per partner (sums to 1). Also carries a performance
@@ -311,23 +358,7 @@ export function getIndirectData(f: IndirectFilters) {
   const validationDone = scaleV(428);
   const validationTotal = scaleV(640);
 
-  const commissionCycle = {
-    period: `${f.granularity === "Year" ? "" : f.quarter + " "}${f.year}`.trim(),
-    payoutAmount,
-    stages: [
-      { label: "Data Cut-off", date: "2026-08-31", status: "done" as const, note: "Activation & billing data frozen" },
-      { label: "Calculation", date: "2026-09-01", status: "done" as const, note: "Achievement & commission computed for all 10 plans" },
-      {
-        label: "Validation (2nd Bill)",
-        date: "2026-09-08",
-        status: "current" as const,
-        note: "Confirming hunting activations against 2nd bill / payment",
-        progress: { done: validationDone, total: validationTotal, unit: "activations checked" },
-      },
-      { label: "Approval", date: "2026-09-12", status: "upcoming" as const, note: "Finance sign-off on payout schedule" },
-      { label: "Payout", date: "2026-09-18", status: "upcoming" as const, note: "Commission released to partner accounts" },
-    ],
-  };
+  const commissionCycle = buildCycle(f, payoutAmount, validationDone, validationTotal);
 
   return {
     revenueActual,

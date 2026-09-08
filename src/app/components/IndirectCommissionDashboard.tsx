@@ -2107,9 +2107,9 @@ export function IndirectCommissionDashboard({
                 title="Commission Approval Status"
                 action={
                   <TableTools>
-                    <Pill tone={current ? "blue" : "green"}>{current ? `Awaiting ${current.label}` : "Approved"}</Pill>
+                    <Pill tone={current ? "blue" : "green"}>{current ? `Awaiting ${current.label}` : "Paid"}</Pill>
                     <span className="text-xs text-gray-400 dark:text-gray-500">
-                      Payout {toPayout > 0 ? `in ${toPayout} days` : "due"}
+                      Payout {toPayout > 0 ? `in ${toPayout} days` : current ? "due" : "complete"}
                     </span>
                   </TableTools>
                 }

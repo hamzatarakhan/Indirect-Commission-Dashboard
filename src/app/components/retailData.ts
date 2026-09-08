@@ -111,6 +111,53 @@ function timeAxis(f: RetailFilters): { unit: "Month" | "Week"; labels: string[] 
   return { unit: "Week", labels: ["Week 1", "Week 2", "Week 3", "Week 4"] };
 }
 
+// Approval cycle whose stage dates & statuses track the selected period.
+const CYCLE_TODAY = new Date("2026-09-08T00:00:00");
+const CYCLE_STAGE_DEFS = [
+  { label: "Activation Cut-off", offset: 0 },
+  { label: "Eligibility Check", offset: 2 },
+  { label: "Commission Calc", offset: 5 },
+  { label: "Outlet Approval", offset: 10 },
+  { label: "Payout", offset: 16 },
+];
+function periodEndDate(f: RetailFilters) {
+  const y = Number(f.year) || 2026;
+  if (f.granularity === "Year") return new Date(y, 11, 31);
+  if (f.granularity === "Month") return new Date(y, monthIndex(f.month) + 1, 0);
+  const qm = QUARTER_MONTHS[f.quarter] ?? QUARTER_MONTHS.Q3;
+  return new Date(y, qm[2] + 1, 0);
+}
+function buildCycle(f: RetailFilters, payoutAmount: number) {
+  const end = periodEndDate(f);
+  const started = end <= CYCLE_TODAY;
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  let currentTaken = false;
+  const stages = CYCLE_STAGE_DEFS.map((s) => {
+    const d = new Date(end);
+    d.setDate(d.getDate() + s.offset);
+    let status: "done" | "current" | "upcoming";
+    if (d < CYCLE_TODAY) status = "done";
+    else if (started && !currentTaken) {
+      status = "current";
+      currentTaken = true;
+    } else status = "upcoming";
+    const row = { label: s.label, date: iso(d), status };
+    return status === "current" && s.label === "Commission Calc"
+      ? { ...row, progress: { done: Math.round(payoutAmount * 0.55), total: payoutAmount, unit: "OMR computed" } }
+      : row;
+  });
+  return {
+    period:
+      f.granularity === "Year"
+        ? String(f.year)
+        : f.granularity === "Month"
+          ? `${f.month} ${f.year}`
+          : `${f.quarter} ${f.year}`,
+    payoutAmount,
+    stages,
+  };
+}
+
 const r = (n: number) => Math.round(n);
 const clampPct = (n: number) => Math.max(0, Math.min(180, Math.round(n)));
 const fmtOMR0 = (n: number) => Math.round(n);
@@ -327,18 +374,8 @@ export function getRetailData(f: RetailFilters) {
     commissionPaid: p.totalPaid,
   }));
 
-  // ---- commission cycle status ----
-  const commissionCycle = {
-    period: `${f.granularity === "Year" ? "" : f.quarter + " "}${f.year}`.trim(),
-    payoutAmount: paidTotal,
-    stages: [
-      { label: "Activation Cut-off", date: "2026-08-31", status: "done" as const },
-      { label: "Eligibility Check", date: "2026-09-02", status: "done" as const },
-      { label: "Commission Calc", date: "2026-09-05", status: "current" as const, progress: { done: r(paidTotal * 0.55), total: paidTotal, unit: "OMR computed" } },
-      { label: "Outlet Approval", date: "2026-09-10", status: "upcoming" as const },
-      { label: "Payout", date: "2026-09-16", status: "upcoming" as const },
-    ],
-  };
+  // ---- commission approval cycle (dates & statuses derived from the period) ----
+  const commissionCycle = buildCycle(f, paidTotal);
 
   // ---- drill-through: outlets in a region (Region → Outlet) ----
   const regionOutlets = (regionName: string) =>

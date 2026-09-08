@@ -389,6 +389,12 @@ export function RetailOutletDashboard({ period, quarter, month, year }: Props) {
   const commOutletPage = usePaged(D.commissionByOutlet, 10, D);
 
   const trendColLabel = `${D.axisUnit === "Week" ? "Weekly" : "Monthly"} Trend`;
+  const periodLabel =
+    D.filters.granularity === "Year"
+      ? D.filters.year
+      : D.filters.granularity === "Month"
+        ? `${D.filters.month} ${D.filters.year}`
+        : `${D.filters.quarter} ${D.filters.year}`;
 
   const planChartData = D.activationsByPlan.map((p) => ({ ...p, short: p.plan.replace("Retail ", "") }));
   const cmPaidTotal = D.commissionByPlan.reduce((s, p) => s + p.totalPaid, 0);
@@ -700,7 +706,7 @@ export function RetailOutletDashboard({ period, quarter, month, year }: Props) {
         {/* ================= COMMISSION ================= */}
         <TabsContent value="commission" className="space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatTile label="Total Commission Paid" value={fmtOMR(D.paidTotal)} tone="good" sub={`${D.filters.year}${granularity === "Year" ? "" : ` · ${quarter}`}`} />
+            <StatTile label="Total Commission Paid" value={fmtOMR(D.paidTotal)} tone="good" sub={periodLabel} />
             <StatTile label="Eligible Activations" value={fmtNum(D.eligibleTotal)} sub={`of ${fmtNum(cmActs)} total`} progress={cmActs ? (cmEligible / cmActs) * 100 : 0} progressLabel="eligibility rate" />
             <StatTile label="Staff Paid" value={fmtNum(D.commissionByPlan.reduce((s, p) => Math.max(s, p.staffCount), 0))} sub="unique staff across plans" />
             <StatTile label="Avg Commission / Staff" value={fmtOMR(D.paidTotal / Math.max(1, D.staffCount))} sub="blended across all plans" />
@@ -893,8 +899,10 @@ export function RetailOutletDashboard({ period, quarter, month, year }: Props) {
                 title="Commission Approval Status"
                 action={
                   <TableTools>
-                    <Pill tone={current ? "blue" : "green"}>{current ? `Awaiting ${current.label}` : "Approved"}</Pill>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">Payout {toPayout > 0 ? `in ${toPayout} days` : "due"}</span>
+                    <Pill tone={current ? "blue" : "green"}>{current ? `Awaiting ${current.label}` : "Paid"}</Pill>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      Payout {toPayout > 0 ? `in ${toPayout} days` : current ? "due" : "complete"}
+                    </span>
                   </TableTools>
                 }
               >
