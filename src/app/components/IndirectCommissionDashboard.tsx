@@ -1811,7 +1811,7 @@ export function IndirectCommissionDashboard({
 
           {/* Terminations Analysis */}
           <SectionCard icon={<TrendingDown className="w-5 h-5 text-blue-600 dark:text-blue-400" />} title="Terminations Analysis">
-            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 {
                   k: "Terminated connections",
@@ -1833,13 +1833,6 @@ export function IndirectCommissionDashboard({
                   tone: "text-gray-900 dark:text-gray-100",
                   sub: "CRs with ≥ 1 termination",
                   delta: P ? <Delta current={D.terminationUniqueCRs} prev={P.terminationUniqueCRs} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} invert /> : null,
-                },
-                {
-                  k: "Within 2nd-bill window",
-                  v: fmtNum(D.terminationsByProduct.reduce((s, t) => s + t.within2ndBill, 0)),
-                  tone: "text-amber-600 dark:text-amber-400",
-                  sub: "commission at risk",
-                  delta: P ? <Delta current={D.terminationsByProduct.reduce((s, t) => s + t.within2ndBill, 0)} prev={P.terminationsByProduct.reduce((s, t) => s + t.within2ndBill, 0)} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} invert /> : null,
                 },
               ].map((x) => (
                 <div key={x.k} className="rounded-lg border border-gray-200/70 bg-gray-50/60 p-3 dark:border-gray-700/60 dark:bg-white/[0.03]">
