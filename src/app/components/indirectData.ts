@@ -170,10 +170,21 @@ const BASE = {
     { period: "Aug", activations: 2530, terminations: 610 },
   ],
   terminationsByType: [
-    { type: "Hunting", count: 780, within2ndBill: 92 },
-    { type: "Farming", count: 340, within2ndBill: 8 },
-    { type: "Port-in", count: 620, within2ndBill: 71 },
-    { type: "Upgrades", count: 650, within2ndBill: 44 },
+    { type: "Hunting", count: 780, within2ndBill: 92, avgRevenue: 640 },
+    { type: "Farming", count: 340, within2ndBill: 8, avgRevenue: 410 },
+    { type: "Port-in", count: 620, within2ndBill: 71, avgRevenue: 520 },
+    { type: "Upgrades", count: 650, within2ndBill: 44, avgRevenue: 360 },
+  ],
+  // Distinct CRs with at least one termination (Quarter · All Partners baseline).
+  terminationUniqueCRs: 63,
+  // Churn reason mix (weights sum to 1).
+  terminationReasons: [
+    { reason: "Competitor offer", weight: 0.31 },
+    { reason: "Price / affordability", weight: 0.24 },
+    { reason: "Service quality", weight: 0.17 },
+    { reason: "Business closure / downsizing", weight: 0.12 },
+    { reason: "Non-payment", weight: 0.1 },
+    { reason: "Relocation", weight: 0.06 },
   ],
   revenueContribution: [
     { name: "Hunting", value: 900_000, color: "#3b82f6" },
@@ -291,10 +302,27 @@ export function getIndirectData(f: IndirectFilters) {
     terminations: r((naTerm / naN) * (0.9 + i * (0.2 / naN)) * (1 + Math.cos(i) * 0.04)),
   }));
 
-  const terminationsByType = BASE.terminationsByType.map((t) => ({
-    ...t,
-    count: scaleV(t.count),
-    within2ndBill: scaleV(t.within2ndBill),
+  // ---- terminations detail ----
+  const terminationsByProduct = BASE.terminationsByType.map((t) => {
+    const count = scaleV(t.count);
+    return {
+      product: t.type,
+      count,
+      within2ndBill: scaleV(t.within2ndBill),
+      value: r(count * t.avgRevenue), // revenue impact of the terminated connections
+    };
+  });
+  const terminationRevenueImpact = terminationsByProduct.reduce((s, t) => s + t.value, 0);
+  const terminationUniqueCRs = r(BASE.terminationUniqueCRs * Math.max(0.4, volume ** 0.7));
+  const terminationsByMonth = netActivationsTrend.map((m) => ({
+    period: m.period,
+    terminations: m.terminations,
+  }));
+  const terminationsTotalForReason = terminationsByProduct.reduce((s, t) => s + t.count, 0);
+  const terminationsByReason = BASE.terminationReasons.map((rn) => ({
+    reason: rn.reason,
+    count: r(terminationsTotalForReason * rn.weight),
+    share: rn.weight * 100,
   }));
 
   const revenueContribution = BASE.revenueContribution.map((c) => ({
@@ -370,7 +398,11 @@ export function getIndirectData(f: IndirectFilters) {
     activationTypeBreakdown,
     netActivationsTrend,
     axisUnit: axis.unit,
-    terminationsByType,
+    terminationsByProduct,
+    terminationsByMonth,
+    terminationsByReason,
+    terminationRevenueImpact,
+    terminationUniqueCRs,
     revenueContribution,
     huntingValidation,
     inactiveCRList,

@@ -1759,9 +1759,8 @@ export function IndirectCommissionDashboard({
             </DataTable>
           </SectionCard>
 
-          {/* Net Activations & Terminations Analysis */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SectionCard
+          {/* Net Activations */}
+          <SectionCard
               icon={<Repeat className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
               title="Net Activations (Activations vs Terminations)"
               action={
@@ -1810,83 +1809,110 @@ export function IndirectCommissionDashboard({
               </ResponsiveContainer>
             </SectionCard>
 
-            <SectionCard icon={<TrendingDown className="w-5 h-5 text-blue-600 dark:text-blue-400" />} title="Terminations Analysis">
-              <div className="flex flex-wrap gap-x-8 gap-y-3 mb-5">
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Total Terminations</p>
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{fmtNum(totalTerminations)}</p>
-                  {P && (
-                    <Delta
-                      current={totalTerminations}
-                      prev={P.totalTerminations}
-                      fmt={(n) => fmtNum(Math.abs(Math.round(n)))}
-                      invert
-                    />
-                  )}
+          {/* Terminations Analysis */}
+          <SectionCard icon={<TrendingDown className="w-5 h-5 text-blue-600 dark:text-blue-400" />} title="Terminations Analysis">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                {
+                  k: "Terminated connections",
+                  v: fmtNum(totalTerminations),
+                  tone: "text-red-600 dark:text-red-400",
+                  sub: `${((totalTerminations / totalActivations) * 100).toFixed(1)}% of activations`,
+                  delta: P ? <Delta current={totalTerminations} prev={P.totalTerminations} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} invert /> : null,
+                },
+                {
+                  k: "Revenue impact",
+                  v: fmtOMR(D.terminationRevenueImpact),
+                  tone: "text-red-600 dark:text-red-400",
+                  sub: "value of terminated connections",
+                  delta: P ? <Delta current={D.terminationRevenueImpact} prev={P.terminationRevenueImpact} fmt={(n) => fmtOMR(Math.abs(n))} invert /> : null,
+                },
+                {
+                  k: "Unique CRs affected",
+                  v: fmtNum(D.terminationUniqueCRs),
+                  tone: "text-gray-900 dark:text-gray-100",
+                  sub: "CRs with ≥ 1 termination",
+                  delta: P ? <Delta current={D.terminationUniqueCRs} prev={P.terminationUniqueCRs} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} invert /> : null,
+                },
+                {
+                  k: "Within 2nd-bill window",
+                  v: fmtNum(D.terminationsByProduct.reduce((s, t) => s + t.within2ndBill, 0)),
+                  tone: "text-amber-600 dark:text-amber-400",
+                  sub: "commission at risk",
+                  delta: P ? <Delta current={D.terminationsByProduct.reduce((s, t) => s + t.within2ndBill, 0)} prev={P.terminationsByProduct.reduce((s, t) => s + t.within2ndBill, 0)} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} invert /> : null,
+                },
+              ].map((x) => (
+                <div key={x.k} className="rounded-lg border border-gray-200/70 bg-gray-50/60 p-3 dark:border-gray-700/60 dark:bg-white/[0.03]">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">{x.k}</p>
+                  <p className={`text-lg font-bold ${x.tone}`}>{x.v}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500">{x.sub}</p>
+                  {x.delta}
                 </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Termination Rate</p>
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                    {((totalTerminations / totalActivations) * 100).toFixed(1)}%
-                  </p>
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500">of gross activations</p>
-                  {P && (
-                    <Delta
-                      current={(totalTerminations / totalActivations) * 100}
-                      prev={(P.totalTerminations / P.totalActivations) * 100}
-                      fmt={(n) => Math.abs(n).toFixed(1)}
-                      suffix="pp"
-                      invert
-                    />
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Within 2nd-bill window</p>
-                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                    {fmtNum(D.terminationsByType.reduce((s, t) => s + t.within2ndBill, 0))}
-                  </p>
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500">commission at risk</p>
-                  {P && (
-                    <Delta
-                      current={D.terminationsByType.reduce((s, t) => s + t.within2ndBill, 0)}
-                      prev={P.terminationsByType.reduce((s, t) => s + t.within2ndBill, 0)}
-                      fmt={(n) => fmtNum(Math.abs(Math.round(n)))}
-                      invert
-                    />
-                  )}
-                </div>
-              </div>
+              ))}
+            </div>
 
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2.5">By activation type</p>
-              <div className="space-y-3">
-                {[...D.terminationsByType]
-                  .sort((a, b) => b.count - a.count)
-                  .map((t) => {
-                    const share = (t.count / totalTerminations) * 100;
-                    const pt = P?.terminationsByType.find((x) => x.type === t.type);
-                    return (
-                      <div key={t.type}>
-                        <div className="flex items-baseline justify-between text-xs mb-1">
-                          <span className="text-gray-700 dark:text-gray-300">{t.type}</span>
-                          <span className="flex items-baseline gap-1.5 text-gray-500 dark:text-gray-400">
-                            <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(t.count)}</span>
-                            {" · "}
-                            {share.toFixed(0)}%
-                            {pt && <Delta current={t.count} prev={pt.count} fmt={(n) => fmtNum(Math.abs(Math.round(n)))} invert />}
-                          </span>
+            <p className="mb-2.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+              Terminations by {D.axisUnit === "Week" ? "week" : "month"}
+            </p>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={D.terminationsByMonth} margin={{ top: 18 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+                <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} width={isMobile ? 34 : 44} />
+                <RTooltip formatter={(v: number) => fmtNum(v)} />
+                <Bar dataKey="terminations" name="Terminations" fill="#ef4444" radius={[4, 4, 0, 0]}>
+                  <LabelList dataKey="terminations" position="top" formatter={fmtShort} className="fill-gray-500 text-[11px]" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+
+            <div className="mt-6 grid gap-x-8 gap-y-6 lg:grid-cols-2">
+              <div>
+                <p className="mb-2.5 text-xs font-medium text-gray-500 dark:text-gray-400">Terminations by product</p>
+                <div className="space-y-3">
+                  {[...D.terminationsByProduct]
+                    .sort((a, b) => b.count - a.count)
+                    .map((t) => {
+                      const share = totalTerminations ? (t.count / totalTerminations) * 100 : 0;
+                      return (
+                        <div key={t.product}>
+                          <div className="mb-1 flex items-baseline justify-between text-xs">
+                            <span className="text-gray-700 dark:text-gray-300">{t.product}</span>
+                            <span className="flex items-baseline gap-1.5 text-gray-500 dark:text-gray-400">
+                              <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(t.count)}</span>
+                              <span className="text-[11px]">· {fmtOMR(t.value)}</span>
+                              <span className="text-[11px]">· {share.toFixed(0)}%</span>
+                            </span>
+                          </div>
+                          <div className="h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-white/[0.06]">
+                            <div className="h-full rounded-full bg-red-400 transition-[width] duration-700 ease-out dark:bg-red-500" style={{ width: `${share}%` }} />
+                          </div>
                         </div>
-                        <div className="h-2 rounded-full bg-gray-100 dark:bg-white/[0.06] overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-red-400 dark:bg-red-500 transition-[width] duration-700 ease-out"
-                            style={{ width: `${share}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                </div>
               </div>
-            </SectionCard>
-          </div>
+              <div>
+                <p className="mb-2.5 text-xs font-medium text-gray-500 dark:text-gray-400">Terminations by reason</p>
+                <div className="space-y-3">
+                  {D.terminationsByReason.map((rn) => (
+                    <div key={rn.reason}>
+                      <div className="mb-1 flex items-baseline justify-between text-xs">
+                        <span className="text-gray-700 dark:text-gray-300">{rn.reason}</span>
+                        <span className="flex items-baseline gap-1.5 text-gray-500 dark:text-gray-400">
+                          <span className="font-semibold text-gray-900 dark:text-gray-100">{fmtNum(rn.count)}</span>
+                          <span className="text-[11px]">· {rn.share.toFixed(0)}%</span>
+                        </span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-white/[0.06]">
+                        <div className="h-full rounded-full bg-red-400 transition-[width] duration-700 ease-out dark:bg-red-500" style={{ width: `${rn.share}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </SectionCard>
         </TabsContent>
 
         {/* ================= COMMISSION ================= */}
