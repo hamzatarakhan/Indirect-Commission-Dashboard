@@ -43,3 +43,6 @@ src/app/temp_update.txt
 
 # generated docs
 *.pdf
+
+# internal hand-off doc (contains client details; repo is public)
+PROJECT_CONTEXT.md
